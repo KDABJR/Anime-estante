@@ -73,6 +73,13 @@ textarea { min-height:85px }
 <option value="title">Título A–Z</option><option value="rating">Maiores notas</option>
 <option value="recent">Mais recentes</option><option value="old">Mais antigos</option>
 </select></div>
+<details class="migration" open><summary>Temporada japonesa e títulos</summary>
+<p id="seasonLabel">Temporada atual no Japão</p>
+<div class="actions" style="flex-wrap:wrap;justify-content:start"><button id="seasonImport">Importar temporada atual</button><button id="completeTitles">Completar títulos secundários</button></div>
+<label class="inline" style="margin-top:12px"><input id="seasonAuto" type="checkbox"> Importar automaticamente neste aparelho</label>
+<p>Adiciona como Pendente, com capa e dois títulos quando disponíveis. Preserva seus cadastros. A verificação automática ocorre diariamente com o app aberto e também quando a temporada muda. Ative em cada aparelho desejado.</p>
+<p class="small">Catálogo: AniList · origem Japão · sem conteúdo adulto explícito. Pode incluir filmes, especiais e estreias previstas.</p>
+<p id="seasonInfo" role="status"></p><ul id="seasonErrors" class="small" style="max-height:180px;overflow:auto"></ul></details>
 <details class="migration"><summary>Trazer coleção do PC</summary>
 <p>Exporte uma cópia pelo botão Nuvem do app Windows e selecione o arquivo aqui.</p>
 <input type="file" id="importFile" accept=".xml" aria-label="Arquivo da coleção">
@@ -99,7 +106,7 @@ textarea { min-height:85px }
   <div class="actions"><button id="cancel" type="button">Cancelar</button><button class="primary" id="save">Salvar na nuvem</button></div>
 </form>
 </dialog>
-<script src="cloud.js"></script>
+<script src="cloud.js?v=3"></script>
 <script>
 const el = id => document.getElementById(id);
 const editor = el('editor'), form = el('editForm');
@@ -190,7 +197,7 @@ function render() {
     const body = textNode('div', '', 'card-body');
     body.append(textNode('strong', item.Title));
     if (item.AlternateTitle) body.append(textNode('span', item.AlternateTitle, 'small'));
-    const episodes = item.Total ? item.Episode + '/' + item.Total + ' ep.' :
+    const episodes = item.Status === 'Assistido' ? (item.Total ? item.Total + '/' + item.Total + ' ep. · Todos vistos' : 'Todos os episódios vistos') : item.Total ? item.Episode + '/' + item.Total + ' ep.' :
       item.Episode ? 'Ep. ' + item.Episode : 'Sem episódios vistos';
     body.append(textNode('span', item.Status, 'badge'),
       textNode('span', episodes + (item.Rating ? ' · ' + item.Rating + '/10' : ''), 'small'));
@@ -206,13 +213,14 @@ function render() {
 }
 
 function edit(item) {
+  if (importing) return;
   active = item;
   form.reset();
   el('editorTitle').textContent = item ? 'Editar anime' : 'Adicionar anime';
   el('title').value = item?.Title || '';
   el('alternate').value = item?.AlternateTitle || '';
   el('status').value = item?.Status || 'Pendente';
-  el('episode').value = item?.Episode || 0;
+  el('episode').value = item?.Status === 'Assistido' && item.Total ? item.Total : item?.Episode || 0;
   el('total').value = item?.Total || 0;
   el('rating').value = item?.Rating || 0;
   el('favorite').checked = item?.Favorite || false;
@@ -271,5 +279,9 @@ el('next').addEventListener('click', () => { page++; render(); window.scrollTo(0
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 setInterval(() => { if (!document.hidden) load(); }, 8000);
 </script>
-<script src="cloud-ui.js"></script></html>
+<script src="cloud-ui.js?v=3"></script><script src="season.js?v=3"></script><script>
+function syncCompletedEpisodes(){if(el('status').value==='Assistido' && Number(el('total').value)>0) el('episode').value=el('total').value;}
+el('status').addEventListener('change',syncCompletedEpisodes);
+el('total').addEventListener('input',syncCompletedEpisodes);
+</script></html>
 

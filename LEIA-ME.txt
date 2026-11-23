@@ -1,37 +1,25 @@
-ANIME ESTANTE ONLINE
+ANIME ESTANTE ONLINE 2.1 — atualização
 
-Arquivos para publicar no GitHub Pages
-index.html
-cloud.js
-cloud-ui.js
-.nojekyll
+PUBLICAR NO GITHUB
+1. Extraia AnimeEstante-Online-Temporadas.zip.
+2. Abra https://github.com/KDABJR/Anime-estante na aba Code.
+3. Use Add file > Upload files.
+4. Arraste os arquivos extraídos (index.html, cloud.js, cloud-ui.js, season.js, .nojekyll e LEIA-ME.txt), sem a pasta externa. Confirme em Commit changes.
+5. Aguarde o GitHub Pages terminar de publicar. Feche e abra o aplicativo Windows. Não é necessário trocar o EXE.
+6. Instale AnimeEstante-Android-Online-2.1.apk por cima do app atual. Essa versão permite consultar o catálogo AniList e baixar suas capas. Entre na mesma conta se solicitado.
 
-1. Crie o repositório anime-estante na sua conta do GitHub e inicialize com README.
-2. Envie os quatro arquivos para a raiz do repositório.
-3. Abra Settings > Pages. Em Build and deployment, selecione Deploy from a branch.
-4. Escolha main e / (root). Salve e aguarde a publicação.
-5. Copie o endereço publicado.
-6. No Supabase, abra Authentication > URL Configuration.
-   Em Site URL, informe o endereço publicado.
-   Em Redirect URLs, adicione o mesmo endereço com a barra final.
-   Salve.
-7. Abra o site e escolha Criar conta com seu e-mail e uma senha.
-8. Confirme o e-mail recebido e entre no site.
-9. No app Windows atualizado, use Nuvem > Exportar coleção e capas.
-10. No site, abra Trazer coleção do PC e selecione o XML exportado.
-11. Para usar com o PC desligado, abra o site no Android com a mesma conta.
+RECURSOS
+Temporada japonesa e títulos > Importar temporada atual: consulta a temporada atual no Japão. Adiciona os animes japoneses como Pendente com capa, episódios e títulos em romaji e inglês quando disponíveis. Inclui filmes e especiais catalogados para essa temporada. Exclui conteúdo adulto explícito. Animes de temporadas anteriores que continuam em exibição podem não estar nesta lista de estreias.
 
-A coleção online é compartilhada entre os navegadores que usam a mesma conta.
-O executável Windows desta etapa exporta a coleção local. A sincronização automática
-entre o executável e o Supabase ainda depende da próxima integração.
-O APK anterior continua usando o modo local do PC. A versão online usa o navegador.
+Importar automaticamente neste aparelho: ative a caixa em cada aparelho desejado. Verifica diariamente com o aplicativo aberto e na mudança de estação. Não executa com os dois aplicativos fechados. Pode ser ativado nos dois sem duplicar os registros criados pela importação da temporada.
 
-A chave publishable incluída no código é pública. O acesso aos registros exige login
-e depende das regras RLS configuradas no Supabase.
-Senha do banco, chave secret e service_role não devem ser incluídas nos arquivos publicados.
+Completar títulos secundários: busca os títulos que faltam nos cadastros existentes. Só altera quando o identificador ou um título completo corresponde com segurança ao catálogo. Mantém títulos secundários já preenchidos. Informa os não encontrados. Uma coleção grande pode levar vários minutos. Mantenha o app aberto. Você pode repetir para continuar os que faltarem.
 
-Verificação realizada
-Conexão ao projeto e configurações de autenticação consultadas.
-Consulta sem login rejeitada pelo Supabase.
-Scripts validados e operações verificadas com respostas simuladas.
-Login real, envio das capas e publicação dependem da sua conta e do repositório.
+Assistido: completa automaticamente os episódios com o total conhecido, inclusive dos registros antigos ao abrir o app. Se o total for desconhecido, exibe Todos os episódios vistos sem inventar uma quantidade.
+
+O app preserva notas, status, favoritos, progresso e capas existentes. Na importação de temporada, preenche apenas capa e título secundário que estiverem faltando. Exclusões anteriores não são restauradas. Avisos de capas indisponíveis e falhas ficam visíveis para tentar novamente.
+
+Catálogo e documentação: https://docs.anilist.co/guide/graphql/queries/media
+Não precisa alterar o banco Supabase ou importar novamente o XML da sua coleção.
+
+Verificado: compilação e assinatura Android 2.1, consulta real da temporada e acesso às capas, testes de origem Japão, mudança de estação no horário japonês, preservação de dados, repetição de importação e proteção contra conflito de edições. Publicação e uso em aparelho real desta atualização ainda dependem dos passos acima.

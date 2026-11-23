@@ -128,7 +128,7 @@ async function saveCloud(change) {
   if (change.Cover) cover = await uploadCover(id, change.Cover);
   const row = {
     user_id: user.id, id, title: change.Title.trim(), alternate_title: change.AlternateTitle ?? original?.alternate_title ?? null,
-    status: change.Status, episode: change.Episode, total: change.Total, rating: change.Rating,
+    status: change.Status, episode: change.Status === 'Assistido' && change.Total > 0 ? change.Total : change.Episode, total: change.Total, rating: change.Rating,
     favorite: change.Favorite, notes: change.Notes, cover_path: cover
   };
   if (!STATUSES.includes(row.status) || !row.title || !Number.isInteger(row.episode) ||
