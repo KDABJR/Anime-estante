@@ -7,6 +7,7 @@
 <style>
 :root { color-scheme: dark; --base:#151523; --panel:#232337; --line:#454361; --text:#f8f5ff; --muted:#c0bcd4; --accent:#c6adff; }
 * { box-sizing:border-box }
+[hidden] { display:none !important; }
 body { margin:0; font:16px system-ui,sans-serif; background:var(--base); color:var(--text) }
 main { width:min(100%, 920px); margin:auto; padding:22px clamp(14px,4vw,30px) max(24px,env(safe-area-inset-bottom)); }
 header { display:flex; align-items:end; justify-content:space-between; gap:12px; padding-bottom:15px; border-bottom:1px solid var(--line); }
@@ -62,25 +63,34 @@ textarea { min-height:85px }
 <p id="loginInfo" role="status"></p>
 </form></section>
 <div id="library" hidden>
-<header><div><div class="kicker">MINHA COLEÇÃO ONLINE</div><h1>Anime Estante</h1></div><div class="actions"><button id="logout">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
+<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.2</div><h1>Anime Estante</h1></div><div class="actions"><button id="logout">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
 <div class="filters">
   <input id="search" type="search" placeholder="Buscar título" aria-label="Buscar título">
   <select id="filter" aria-label="Filtrar por status"><option value="">Todos os status</option></select>
 </div>
+<details class="migration"><summary>Compartilhar estante</summary>
+<p>Os animes e suas capas entram na lista comum. Status, episódios, notas, favoritos e anotações continuam individuais. Os membros podem consultar a coleção uns dos outros em modo só leitura. Entrar também compartilha os títulos que você já tem.</p>
+<p id="sharedShelfName"></p><ul id="sharedMembers" class="small"></ul>
+<div class="row"><label>Seu nome de exibição<input id="memberLabel" maxlength="60" autocomplete="nickname"></label><label>Nome da estante<input id="shelfName" maxlength="80" placeholder="Nossa estante"></label></div>
+<div class="actions" style="margin-top:10px;flex-wrap:wrap"><button id="createShelf">Compartilhar minha estante</button><button id="inviteShelf" hidden>Gerar convite</button></div>
+<label style="margin-top:10px">Código recebido<input id="inviteCode" maxlength="64" autocomplete="off" spellcheck="false"></label><button id="joinShelf" style="margin-top:8px">Entrar na estante</button>
+<div id="invitationResult" hidden><label style="margin-top:10px">Envie este código para a outra pessoa<input id="generatedInvite" readonly></label><button id="copyInvite">Copiar convite</button></div>
+<p id="sharingInfo" role="status"></p></details>
+<label id="viewCollectionLabel" hidden>Coleção exibida<select id="viewCollection"><option value="">Minha coleção</option></select></label><p id="viewBanner" class="badge" role="status" hidden></p>
 <p id="connection" role="status">Conectando à estante…</p>
 <div class="filters"><p id="count"></p>
 <select id="sort" aria-label="Ordenar">
 <option value="title">Título A–Z</option><option value="rating">Maiores notas</option>
 <option value="recent">Mais recentes</option><option value="old">Mais antigos</option>
 </select></div>
-<details class="migration" open><summary>Temporada japonesa e títulos</summary>
+<details id="seasonPanel" class="migration" open><summary>Temporada japonesa e títulos</summary>
 <p id="seasonLabel">Temporada atual no Japão</p>
 <div class="actions" style="flex-wrap:wrap;justify-content:start"><button id="seasonImport">Importar temporada atual</button><button id="completeTitles">Completar títulos secundários</button></div>
 <label class="inline" style="margin-top:12px"><input id="seasonAuto" type="checkbox"> Importar automaticamente neste aparelho</label>
 <p>Adiciona como Pendente, com capa e dois títulos quando disponíveis. Preserva seus cadastros. A verificação automática ocorre diariamente com o app aberto e também quando a temporada muda. Ative em cada aparelho desejado.</p>
 <p class="small">Catálogo: AniList · origem Japão · sem conteúdo adulto explícito. Pode incluir filmes, especiais e estreias previstas.</p>
 <p id="seasonInfo" role="status"></p><ul id="seasonErrors" class="small" style="max-height:180px;overflow:auto"></ul></details>
-<details class="migration"><summary>Trazer coleção do PC</summary>
+<details id="migrationPanel" class="migration"><summary>Trazer coleção do PC</summary>
 <p>Exporte uma cópia pelo botão Nuvem do app Windows e selecione o arquivo aqui.</p>
 <input type="file" id="importFile" accept=".xml" aria-label="Arquivo da coleção">
 <button id="importButton" type="button">Importar coleção e capas</button>
@@ -90,6 +100,7 @@ textarea { min-height:85px }
   <button id="previous">Anterior</button><span id="pageNumber"></span><button id="next">Próxima</button>
 </nav>
 </div></main>
+<dialog id="removeMemberDialog"><h2>Encerrar compartilhamento</h2><p id="removeMemberInfo"></p><p>Os registros pessoais já salvos serão mantidos. O acesso às coleções e capas dos outros membros será encerrado.</p><div class="actions"><button id="cancelRemoveMember">Cancelar</button><button id="confirmRemoveMember">Encerrar acesso</button></div><p id="removeMemberError" role="status"></p></dialog>
 <dialog id="editor">
 <form id="editForm">
   <h2 id="editorTitle">Editar anime</h2>
@@ -106,7 +117,7 @@ textarea { min-height:85px }
   <div class="actions"><button id="cancel" type="button">Cancelar</button><button class="primary" id="save">Salvar na nuvem</button></div>
 </form>
 </dialog>
-<script src="cloud.js?v=3"></script>
+<script src="cloud.js?v=4"></script>
 <script>
 const el = id => document.getElementById(id);
 const editor = el('editor'), form = el('editForm');
@@ -140,6 +151,7 @@ async function load() {
     }
     el('connection').textContent = 'Conectado à nuvem · Coleção disponível com o PC desligado.';
     el('add').disabled = false;
+    if(typeof applySharingAccess==='function')applySharingAccess();
   } catch (error) {
     el('connection').textContent = error.message;
   } finally {
@@ -227,6 +239,7 @@ function edit(item) {
   el('notes').value = item?.Notes || '';
   el('removeWrap').style.display = item?.HasCover ? 'flex' : 'none';
   el('error').textContent = '';
+  if(typeof setSharedEditorAccess==='function')setSharedEditorAccess();
   editor.showModal();
 }
 
@@ -241,7 +254,7 @@ function base64(file) {
 
 form.addEventListener('submit', async event => {
   event.preventDefault();
-  if (pending) return;
+  if (pending || (typeof sharingReadonly!=='undefined' && sharingReadonly)) return;
   pending = true;
   el('save').disabled = el('cancel').disabled = true;
   el('error').textContent = '';
@@ -279,7 +292,7 @@ el('next').addEventListener('click', () => { page++; render(); window.scrollTo(0
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 setInterval(() => { if (!document.hidden) load(); }, 8000);
 </script>
-<script src="cloud-ui.js?v=3"></script><script src="season.js?v=3"></script><script>
+<script src="sharing.js?v=4"></script><script src="cloud-ui.js?v=4"></script><script src="season.js?v=4"></script><script>
 function syncCompletedEpisodes(){if(el('status').value==='Assistido' && Number(el('total').value)>0) el('episode').value=el('total').value;}
 el('status').addEventListener('change',syncCompletedEpisodes);
 el('total').addEventListener('input',syncCompletedEpisodes);

@@ -61,6 +61,8 @@ async function catalogCover(id, url) {
   return uploadCover(id,btoa(binary));
 }
 async function patchMetadata(row, fields) {
+  if(typeof sharingReadonly!=='undefined' && sharingReadonly)throw new Error('Esta coleção está em modo só leitura.');
+  if(row._virtual) return saveVirtualMetadata(row,fields);
   const response=await send('/rest/v1/animes?id=eq.'+row.id+'&updated_at=eq.'+encodeURIComponent(row.updated_at)+'&deleted_at=is.null',{
     method:'PATCH',headers:{'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify(fields)});
   const updated=await response.json();
@@ -139,7 +141,7 @@ function seasonPreference(userId) {return 'anime-season-jp:'+userId;}
 function readSeasonPreference(userId) {try{return JSON.parse(localStorage.getItem(seasonPreference(userId))) || {};}catch{return {};}}
 function writeSeasonPreference(userId,value){localStorage.setItem(seasonPreference(userId),JSON.stringify(value));}
 async function seasonalJob(kind) {
-  if(importing || pending || loading || editor.open || !session) return false;
+  if(importing || pending || loading || editor.open || !session || (typeof sharingReadonly!=='undefined' && sharingReadonly)) return false;
   importing=true;
   const buttons=['seasonImport','completeTitles','importButton','add','seasonAuto'];
   buttons.forEach(id=>el(id).disabled=true);
@@ -161,7 +163,7 @@ async function seasonalJob(kind) {
 }
 let seasonAttempt=0,completedAccount=null;
 async function automaticSeason() {
-  if(document.hidden || !session || importing || loading || pending || editor.open) return;
+  if(document.hidden || !session || importing || loading || pending || editor.open || (typeof sharingReadonly!=='undefined' && sharingReadonly)) return;
   const user=await currentUser();
   const pref=readSeasonPreference(user.id);
   el('seasonAuto').checked=!!pref.enabled;

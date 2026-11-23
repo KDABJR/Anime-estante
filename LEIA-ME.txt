@@ -1,25 +1,29 @@
-ANIME ESTANTE ONLINE 2.1 — atualização
+ANIME ESTANTE ONLINE 2.2 — estante compartilhada com progresso individual
 
-PUBLICAR NO GITHUB
-1. Extraia AnimeEstante-Online-Temporadas.zip.
-2. Abra https://github.com/KDABJR/Anime-estante na aba Code.
-3. Use Add file > Upload files.
-4. Arraste os arquivos extraídos (index.html, cloud.js, cloud-ui.js, season.js, .nojekyll e LEIA-ME.txt), sem a pasta externa. Confirme em Commit changes.
-5. Aguarde o GitHub Pages terminar de publicar. Feche e abra o aplicativo Windows. Não é necessário trocar o EXE.
-6. Instale AnimeEstante-Android-Online-2.1.apk por cima do app atual. Essa versão permite consultar o catálogo AniList e baixar suas capas. Entre na mesma conta se solicitado.
+ATIVAR
+1. No Supabase do seu projeto, abra SQL Editor > New query. Copie todo o conteúdo de Compartilhar-Estante.sql e execute em Run. O arquivo mantém seus animes atuais. Apenas criar ou entrar em uma estante, depois, publica seus títulos no catálogo comum.
+2. Extraia AnimeEstante-Online-Compartilhado.zip. No repositório https://github.com/KDABJR/Anime-estante, abra Add file > Upload files. Envie os arquivos extraídos na raiz, sem a pasta externa, substituindo os anteriores. Confirme em Commit changes e aguarde o GitHub Pages publicar.
+3. Reabra o aplicativo Windows. Não precisa trocar o EXE. O cabeçalho mostrará versão 2.2.
+4. No Android, instale AnimeEstante-Android-Online-2.2.apk sobre o atual e reabra. Mantém o pacote e a assinatura do app anterior.
 
-RECURSOS
-Temporada japonesa e títulos > Importar temporada atual: consulta a temporada atual no Japão. Adiciona os animes japoneses como Pendente com capa, episódios e títulos em romaji e inglês quando disponíveis. Inclui filmes e especiais catalogados para essa temporada. Exclui conteúdo adulto explícito. Animes de temporadas anteriores que continuam em exibição podem não estar nesta lista de estreias.
+USAR
+Na conta que já tem a coleção, abra Compartilhar estante, preencha seu nome de exibição e o nome da estante e clique Compartilhar minha estante. Seus títulos e capas passarão a integrar a lista comum. Seu progresso e suas notas permanecem na sua própria conta.
+Clique Gerar convite e envie o código para a pessoa desejada. Ele vale por 48 horas, para uma pessoa. Cada novo código cancela o anterior. Gere outro para convidar mais pessoas.
+A outra pessoa cria e confirma sua própria conta pelo app, entra com seu e-mail e senha, preenche seu nome e cola o código em Código recebido. Depois clica Entrar na estante.
+A lista de títulos é compartilhada. Para a outra pessoa, animes sem progresso pessoal começam em Pendente, com episódios vistos, notas e favoritos vazios. Se ela já tiver registros na conta, o progresso existente é preservado e seus títulos também entram no catálogo comum.
+Cada pessoa continua editando só sua própria coleção. Para consultar outra, escolha a pessoa em Coleção exibida. O formulário fica somente para leitura. Status, episódios, avaliação, favoritos e anotações são visíveis aos participantes do grupo, mas só o titular pode alterá-los.
+Ao adicionar um novo anime, o título e a capa aparecem na lista dos participantes após a próxima atualização, em cerca de oito segundos. Atualizações automáticas da temporada também publicam seus novos títulos no catálogo comum.
+Quem criou a estante pode remover o acesso dos demais participantes. Os outros podem sair. Seus registros pessoais já salvos são preservados. Ao sair, perde o acesso aos títulos ainda sem registro pessoal e às capas pertencentes aos outros membros.
 
-Importar automaticamente neste aparelho: ative a caixa em cada aparelho desejado. Verifica diariamente com o aplicativo aberto e na mudança de estação. Não executa com os dois aplicativos fechados. Pode ser ativado nos dois sem duplicar os registros criados pela importação da temporada.
+LIMITES DESTA VERSÃO
+Cada conta participa de uma estante compartilhada por vez. Quem criou permanece como responsável. Campos pessoais não são sincronizados entre pessoas; eles sincronizam entre os aparelhos da mesma conta.
+O catálogo comum mantém os títulos e capas cadastrados inicialmente, completando metadados ausentes. Personalizações posteriores de título/capa em um cadastro individual não substituem automaticamente as personalizações de outro participante.
+Participar permite consultar mutuamente a coleção, inclusive anotações. Não há conta compartilhada, senha coletiva ou acesso de pessoas que não tenham convite.
+As funções de temporada e títulos secundários da versão 2.1 estão incluídas. A execução automática da temporada exige app aberto e internet.
+Não importe de novo o XML da coleção atual. Ele só é necessário para trazer uma coleção local que ainda não esteja na conta correspondente.
 
-Completar títulos secundários: busca os títulos que faltam nos cadastros existentes. Só altera quando o identificador ou um título completo corresponde com segurança ao catálogo. Mantém títulos secundários já preenchidos. Informa os não encontrados. Uma coleção grande pode levar vários minutos. Mantenha o app aberto. Você pode repetir para continuar os que faltarem.
+VERIFICAÇÃO
+Banco PostgreSQL local com três contas: preservação do progresso existente, convites de uso único, substituição de convites, bloqueio de pessoas externas, consulta dos participantes sem permissão de escrita, leitura de capas por associação, revogação e preservação dos registros pessoais. Interface: progresso Pendente independente, gravação apenas do titular, seleção só leitura, scripts e importação de temporada. APK compilado e assinatura validada.
+O SQL não foi executado no seu banco real e os arquivos ainda precisam ser enviados ao GitHub. Esta integração do GitHub não tem permissão para publicá-los. Não tenho acesso administrativo ao seu Supabase por meio da chave pública do app.
 
-Assistido: completa automaticamente os episódios com o total conhecido, inclusive dos registros antigos ao abrir o app. Se o total for desconhecido, exibe Todos os episódios vistos sem inventar uma quantidade.
-
-O app preserva notas, status, favoritos, progresso e capas existentes. Na importação de temporada, preenche apenas capa e título secundário que estiverem faltando. Exclusões anteriores não são restauradas. Avisos de capas indisponíveis e falhas ficam visíveis para tentar novamente.
-
-Catálogo e documentação: https://docs.anilist.co/guide/graphql/queries/media
-Não precisa alterar o banco Supabase ou importar novamente o XML da sua coleção.
-
-Verificado: compilação e assinatura Android 2.1, consulta real da temporada e acesso às capas, testes de origem Japão, mudança de estação no horário japonês, preservação de dados, repetição de importação e proteção contra conflito de edições. Publicação e uso em aparelho real desta atualização ainda dependem dos passos acima.
+Documentação usada: https://supabase.com/docs/guides/database/functions e https://supabase.com/docs/guides/database/postgres/row-level-security

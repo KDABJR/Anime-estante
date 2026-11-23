@@ -28,6 +28,7 @@ el('logout').addEventListener('click', () => {
   if (pending || importing) return;
   keepSession(null);
   items = []; cloudRows = []; lastData = '';
+  if(typeof sharingState!=='undefined'){sharingState={shelf:null,members:[]};sharingTarget='';sharingReadonly=false;el('generatedInvite').value='';el('invitationResult').hidden=true;el('inviteCode').value='';el('sharingInfo').textContent='';}
   el('grid').replaceChildren();
   el('library').hidden = true;
   el('loginPanel').hidden = false;
@@ -68,9 +69,9 @@ el('importButton').addEventListener('click', async () => {
     const source = parseCollection(await file.text());
     await cloudCollection();
     const user = await currentUser();
-    const ids = new Set(cloudRows.map(row => row.id));
-    const sources = new Set(cloudRows.map(row => row.seasonal_source).filter(Boolean));
-    const titles = new Set(cloudRows.map(row => row.title.trim().toLocaleLowerCase()));
+    const ids = new Set(cloudRows.filter(row => !row._virtual).map(row => row.id));
+    const sources = new Set(cloudRows.filter(row => !row._virtual).map(row => row.seasonal_source).filter(Boolean));
+    const titles = new Set(cloudRows.filter(row => !row._virtual).map(row => row.title.trim().toLocaleLowerCase()));
     for (let index=0; index<source.length; index++) {
       const record = source[index];
       el('importInfo').textContent = (index+1) + '/' + source.length + ' · ' + record.title;

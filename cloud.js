@@ -80,8 +80,9 @@ async function cloudCollection() {
     rows.push(...batch);
     if (batch.length < 500) break;
   }
-  cloudRows = rows;
-  return { statuses: STATUSES, items: rows.filter(row => !row.deleted_at).map(row => ({
+  const visibleRows = typeof sharedCollectionRows === "function" ? await sharedCollectionRows(rows) : rows;
+  cloudRows = visibleRows;
+  return { statuses: STATUSES, items: visibleRows.filter(row => !row.deleted_at).map(row => ({
     Id: row.id, Revision: row.updated_at, Title: row.title, AlternateTitle: row.alternate_title || '',
     Status: row.status, Notes: row.notes, Episode: row.episode, Total: row.total,
     Rating: row.rating, Favorite: row.favorite, HasCover: !!row.cover_path, AddedAt: row.added_at
@@ -119,6 +120,7 @@ async function uploadCover(id, encoded) {
   return path;
 }
 async function saveCloud(change) {
+  if(typeof sharingReadonly!=="undefined" && sharingReadonly) throw new Error("Esta coleção está em modo só leitura.");
   const user = await currentUser();
   const id = uuid(change.Id);
   const original = cloudRows.find(row => row.id === id);
@@ -136,9 +138,11 @@ async function saveCloud(change) {
       row.episode > 100000 || row.total > 100000 || (row.total && row.episode > row.total) ||
       !Number.isInteger(row.rating) || row.rating < 0 || row.rating > 10)
     throw new Error('Revise os episódios, o status e a nota.');
-  const path = '/rest/v1/animes' + (original ? '?id=eq.' + id + '&updated_at=eq.' + encodeURIComponent(change.Revision) : '');
+  if(original?._virtual) row.shared_title_id=original.shared_title_id;
+  const existing = original && !original._virtual;
+  const path = '/rest/v1/animes' + (existing ? '?id=eq.' + id + '&updated_at=eq.' + encodeURIComponent(change.Revision) : '');
   const response = await send(path, {
-    method: original ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
+    method: existing ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
     body: JSON.stringify(row)
   });
   if (!(await response.json()).length) throw new Error('Este anime mudou em outro aparelho. Feche e reabra a edição.');
