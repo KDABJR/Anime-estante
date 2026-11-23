@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#151523">
+<title>Anime Estante</title>
+<style>
+:root { color-scheme: dark; --base:#151523; --panel:#232337; --line:#454361; --text:#f8f5ff; --muted:#c0bcd4; --accent:#c6adff; }
+* { box-sizing:border-box }
+body { margin:0; font:16px system-ui,sans-serif; background:var(--base); color:var(--text) }
+main { width:min(100%, 920px); margin:auto; padding:22px clamp(14px,4vw,30px) max(24px,env(safe-area-inset-bottom)); }
+header { display:flex; align-items:end; justify-content:space-between; gap:12px; padding-bottom:15px; border-bottom:1px solid var(--line); }
+.kicker { color:var(--accent); font-weight:750; font-size:.75rem; letter-spacing:.12em }
+h1 { margin:3px 0 0; line-height:1.05; font-size:clamp(1.75rem,7vw,2.75rem) }
+button,input,select,textarea { font:inherit }
+button,select,input,textarea { color:var(--text); background:var(--panel); border:1px solid var(--line); border-radius:9px; min-width:0 }
+button,select,input { min-height:43px }
+button { padding:6px 12px; cursor:pointer }
+button:disabled { opacity:.5; cursor:default }
+button.primary { background:var(--accent); color:#191329; border-color:var(--accent); font-weight:750 }
+input,select,textarea { padding:8px 10px; width:100% }
+.filters { display:grid; grid-template-columns:1fr minmax(105px, 39%); gap:8px; margin-top:16px }
+#connection,#count,.small { color:var(--muted); font-size:.86rem }
+#connection { min-height:2.6em; margin:10px 0 2px }
+#count { margin:0 0 9px }
+#grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(145px,1fr)); gap:12px; }
+.card { text-align:left; padding:0; overflow:hidden; display:flex; flex-direction:column; position:relative }
+.art { aspect-ratio:1.25; width:100%; display:grid; place-items:center; background:#1a1a2b; color:var(--muted); font-size:.72rem; letter-spacing:.08em }
+.art img { width:100%; height:100%; object-fit:contain; min-height:0 }
+.card-body { width:100%; padding:9px 10px 12px; display:grid; gap:4px }
+.card-body span,.card-body strong { overflow-wrap:anywhere }
+.badge { color:var(--accent); font-size:.82rem }
+.star { position:absolute; right:6px; top:6px; background:#19172b; border-radius:8px; padding:4px 7px; color:#ffd998 }
+nav { display:flex; justify-content:center; align-items:center; gap:10px; margin-top:16px }
+dialog { color:var(--text); width:min(calc(100% - 20px),520px); border:1px solid var(--line); border-radius:14px; background:var(--base); max-height:calc(100dvh - 20px); }
+dialog::backdrop { background:#080713cc }
+form { display:grid; gap:11px }
+h2 { margin:0 0 4px }
+label { display:grid; gap:4px; font-size:.88rem; color:var(--muted) }
+label.inline { display:flex; align-items:center; gap:8px }
+label.inline input { width:18px; min-height:18px }
+.row { display:grid; grid-template-columns:1fr 1fr; gap:9px }
+textarea { min-height:85px }
+.actions { display:flex; justify-content:end; gap:8px }
+#error { color:#ffb9b8; min-height:1.2em; margin:0 }
+#loginPanel { max-width:430px; margin:9vh auto; }
+#loginInfo,#importInfo { color:var(--muted); overflow-wrap:anywhere; }
+.migration { padding:12px; border:1px solid var(--line); border-radius:10px; margin:12px 0 18px; }
+.migration summary { cursor:pointer; }
+.migration p { font-size:14px; color:var(--muted); }
+.migration input { margin-bottom:10px; }
+#library[hidden],#loginPanel[hidden] { display:none; }
+</style>
+<main>
+<section id="loginPanel" aria-label="Entrar na estante">
+<h1>Anime Estante</h1><p>Acesse sua coleção no PC e no celular.</p>
+<form id="loginForm">
+<label>E-mail<input id="email" type="email" autocomplete="username" required></label>
+<label>Senha<input id="password" type="password" autocomplete="current-password" minlength="8" required></label>
+<div class="actions"><button id="createAccount" type="button">Criar conta</button><button id="loginButton" class="primary">Entrar</button></div>
+<button id="recover" type="button">Esqueci minha senha</button>
+<p id="loginInfo" role="status"></p>
+</form></section>
+<div id="library" hidden>
+<header><div><div class="kicker">MINHA COLEÇÃO ONLINE</div><h1>Anime Estante</h1></div><div class="actions"><button id="logout">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
+<div class="filters">
+  <input id="search" type="search" placeholder="Buscar título" aria-label="Buscar título">
+  <select id="filter" aria-label="Filtrar por status"><option value="">Todos os status</option></select>
+</div>
+<p id="connection" role="status">Conectando à estante…</p>
+<div class="filters"><p id="count"></p>
+<select id="sort" aria-label="Ordenar">
+<option value="title">Título A–Z</option><option value="rating">Maiores notas</option>
+<option value="recent">Mais recentes</option><option value="old">Mais antigos</option>
+</select></div>
+<details class="migration"><summary>Trazer coleção do PC</summary>
+<p>Exporte uma cópia pelo botão Nuvem do app Windows e selecione o arquivo aqui.</p>
+<input type="file" id="importFile" accept=".xml" aria-label="Arquivo da coleção">
+<button id="importButton" type="button">Importar coleção e capas</button>
+<p id="importInfo" role="status"></p></details>
+<section id="grid" aria-label="Cartões da estante"></section>
+<nav id="pages" aria-label="Paginação" hidden>
+  <button id="previous">Anterior</button><span id="pageNumber"></span><button id="next">Próxima</button>
+</nav>
+</div></main>
+<dialog id="editor">
+<form id="editForm">
+  <h2 id="editorTitle">Editar anime</h2>
+  <label>Título principal <input id="title" required maxlength="1000"></label>
+  <label>Título secundário <input id="alternate" maxlength="1000"></label>
+  <div class="row"><label>Status <select id="status" required></select></label><label>Nota <select id="rating"></select></label></div>
+  <div class="row"><label>Último episódio visto <input id="episode" type="number" min="0" max="100000" value="0"></label>
+  <label>Total de episódios (0 = indefinido) <input id="total" type="number" min="0" max="100000" value="0"></label></div>
+  <label class="inline"><input id="favorite" type="checkbox"> Favorito</label>
+  <label>Anotações <textarea id="notes"></textarea></label>
+  <label>Capa (até 10 MB) <input id="cover" type="file" accept="image/jpeg,image/png,image/bmp,image/gif"></label>
+  <label id="removeWrap" class="inline"><input id="removeCover" type="checkbox"> Remover capa atual</label>
+  <p id="error" role="alert"></p>
+  <div class="actions"><button id="cancel" type="button">Cancelar</button><button class="primary" id="save">Salvar na nuvem</button></div>
+</form>
+</dialog>
+<script src="cloud.js"></script>
+<script>
+const el = id => document.getElementById(id);
+const editor = el('editor'), form = el('editForm');
+let items = [], statusNames = [], page = 0, lastData = '', active = null;
+let pending = false, loading = false, images = [];
+const pageSize = 24;
+function setOptions(select, names, first) {
+  const value = select.value;
+  select.replaceChildren();
+  if (first) select.add(new Option(first, ''));
+  names.forEach(name => select.add(new Option(name, name)));
+  if ([...select.options].some(option => option.value === value)) select.value = value;
+}
+
+async function load() {
+  if (loading || pending || !session || importing) return;
+  loading = true;
+  try {
+    const response = await request('/api/collection');
+    const data = await response.text();
+    if (lastData !== data) {
+      const parsed = JSON.parse(data);
+      if (statusNames.join('|') !== parsed.statuses.join('|')) {
+        statusNames = parsed.statuses;
+        setOptions(el('status'), statusNames);
+        setOptions(el('filter'), statusNames, 'Todos os status');
+      }
+      items = parsed.items;
+      lastData = data;
+      render();
+    }
+    el('connection').textContent = 'Conectado à nuvem · Coleção disponível com o PC desligado.';
+    el('add').disabled = false;
+  } catch (error) {
+    el('connection').textContent = error.message;
+  } finally {
+    loading = false;
+  }
+}
+
+function textNode(tag, text, className = '') {
+  const node = document.createElement(tag);
+  node.className = className;
+  node.textContent = text;
+  return node;
+}
+
+function normalized(value) {
+  return (value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
+}
+
+function render() {
+  const term = normalized(el('search').value.trim());
+  const filter = el('filter').value;
+  const matches = items.filter(item => (!filter || item.Status === filter) &&
+    (normalized(item.Title).includes(term) || normalized(item.AlternateTitle).includes(term)));
+  matches.sort((a,b) => {
+    const mode = el('sort').value;
+    const score = mode === 'rating' ? b.Rating-a.Rating :
+      mode === 'recent' || mode === 'old' ?
+        (a.AddedAt && b.AddedAt ? (Date.parse(a.AddedAt)-Date.parse(b.AddedAt))*(mode==='recent'?-1:1) :
+          a.AddedAt?-1:b.AddedAt?1:0) : 0;
+    return score || a.Title.localeCompare(b.Title,'pt-BR');
+  });
+  const totalPages = Math.max(1, Math.ceil(matches.length / pageSize));
+  page = Math.min(page, totalPages - 1);
+  const grid = el('grid');
+  grid.replaceChildren();
+  images.forEach(url => URL.revokeObjectURL(url));
+  images = [];
+  for (const item of matches.slice(page * pageSize, (page + 1) * pageSize)) {
+    const card = document.createElement('button');
+    card.className = 'card';
+    card.type = 'button';
+    card.addEventListener('click', () => edit(item));
+    const art = textNode('div', item.HasCover ? '' : 'SEM CAPA', 'art');
+    if (item.HasCover) {
+      request('/api/cover/' + encodeURIComponent(item.Id)).then(r => r.blob()).then(blob => {
+        if (!art.isConnected) return;
+        const image = new Image();
+        image.alt = '';
+        const url = URL.createObjectURL(blob);
+        images.push(url);
+        image.src = url;
+        art.replaceChildren(image);
+      }).catch(() => { art.textContent = 'CAPA INDISPONÍVEL'; });
+    }
+    const body = textNode('div', '', 'card-body');
+    body.append(textNode('strong', item.Title));
+    if (item.AlternateTitle) body.append(textNode('span', item.AlternateTitle, 'small'));
+    const episodes = item.Total ? item.Episode + '/' + item.Total + ' ep.' :
+      item.Episode ? 'Ep. ' + item.Episode : 'Sem episódios vistos';
+    body.append(textNode('span', item.Status, 'badge'),
+      textNode('span', episodes + (item.Rating ? ' · ' + item.Rating + '/10' : ''), 'small'));
+    card.append(art, body);
+    if (item.Favorite) card.append(textNode('span', '★', 'star'));
+    grid.append(card);
+  }
+  el('count').textContent = matches.length ? matches.length + ' título(s)' : 'Nenhum título encontrado.';
+  el('pages').style.display = totalPages > 1 ? 'flex' : 'none';
+  el('pageNumber').textContent = (page + 1) + '/' + totalPages;
+  el('previous').disabled = page === 0;
+  el('next').disabled = page >= totalPages - 1;
+}
+
+function edit(item) {
+  active = item;
+  form.reset();
+  el('editorTitle').textContent = item ? 'Editar anime' : 'Adicionar anime';
+  el('title').value = item?.Title || '';
+  el('alternate').value = item?.AlternateTitle || '';
+  el('status').value = item?.Status || 'Pendente';
+  el('episode').value = item?.Episode || 0;
+  el('total').value = item?.Total || 0;
+  el('rating').value = item?.Rating || 0;
+  el('favorite').checked = item?.Favorite || false;
+  el('notes').value = item?.Notes || '';
+  el('removeWrap').style.display = item?.HasCover ? 'flex' : 'none';
+  el('error').textContent = '';
+  editor.showModal();
+}
+
+function base64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = () => reject(new Error('A capa não pôde ser aberta.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (pending) return;
+  pending = true;
+  el('save').disabled = el('cancel').disabled = true;
+  el('error').textContent = '';
+  try {
+    const file = el('cover').files[0];
+    if (file && file.size > 10 * 1024 * 1024) throw new Error('Escolha uma capa de até 10 MB.');
+    const alternate = el('alternate').value;
+    const change = {
+      Id: active?.Id, Revision: active?.Revision,
+      Title: el('title').value,
+      AlternateTitle: active && alternate === active.AlternateTitle ? null : alternate,
+      Status: el('status').value, Episode: Number(el('episode').value), Total: Number(el('total').value),
+      Rating: Number(el('rating').value), Favorite: el('favorite').checked, Notes: el('notes').value,
+      RemoveCover: el('removeCover').checked, Cover: file ? await base64(file) : null
+    };
+    await request('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(change) }, 45000);
+    editor.close();
+  } catch (error) {
+    el('error').textContent = error.message;
+  } finally {
+    pending = false;
+    el('save').disabled = el('cancel').disabled = false;
+    load();
+  }
+});
+
+for (let rating = 0; rating <= 10; rating++) el('rating').add(new Option(rating ? rating + '/10' : 'Sem nota', rating));
+el('add').addEventListener('click', () => edit(null));
+el('cancel').addEventListener('click', () => editor.close());
+editor.addEventListener('cancel', event => { if (pending) event.preventDefault(); });
+el('search').addEventListener('input', () => { page = 0; render(); });
+el('filter').addEventListener('change', () => { page = 0; render(); });
+el('previous').addEventListener('click', () => { page--; render(); window.scrollTo(0, 0); });
+el('next').addEventListener('click', () => { page++; render(); window.scrollTo(0, 0); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+setInterval(() => { if (!document.hidden) load(); }, 8000);
+</script>
+<script src="cloud-ui.js"></script></html>
+
