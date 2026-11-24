@@ -24,8 +24,9 @@ async function sharedCollectionRows(ownRows) {
   throw error;
  }
  sharingState=state;
+ if(typeof loadFriendsState==='function')await loadFriendsState();
  const user=await currentUser();
- if(!state.members.some(member=>member.user_id===sharingTarget)) sharingTarget='';
+ if(!(typeof visibleCollectionPeople==='function'?visibleCollectionPeople():state.members).some(member=>member.user_id===sharingTarget)) sharingTarget='';
  sharingReadonly=!!sharingTarget && sharingTarget!==user.id;
  let rows=ownRows;
  if(sharingReadonly) {
@@ -33,18 +34,18 @@ async function sharedCollectionRows(ownRows) {
   for(let offset=0;;offset+=500){const batch=await shelfRPC('shelf_view',{p_user:sharingTarget,p_offset:offset});rows.push(...batch);if(batch.length<500)break;}
  }
  const catalog=[];
- if(state.shelf) for(let offset=0;;offset+=500){const batch=await shelfRPC('shelf_catalog',{p_offset:offset});catalog.push(...batch);if(batch.length<500)break;}
+ if(state.shelf || sharingReadonly) for(let offset=0;;offset+=500){const batch=await shelfRPC(sharingReadonly?'shelf_view_catalog':'shelf_catalog',sharingReadonly?{p_user:sharingTarget,p_offset:offset}:{p_offset:offset});catalog.push(...batch);if(batch.length<500)break;}
  updateSharingControls(user);
  return virtualSharedRows(rows,catalog,sharingTarget||user.id);
 }
 function updateSharingControls(user) {
  const selector=el('viewCollection');selector.replaceChildren(new Option('Minha coleção',''));
- for(const member of sharingState.members) if(member.user_id!==user.id) selector.add(new Option((typeof accountName==='function'?accountName(member.username,member.label):member.label)+' · só visualizar',member.user_id));
+ for(const member of (typeof visibleCollectionPeople==='function'?visibleCollectionPeople():sharingState.members)) if(member.user_id!==user.id) selector.add(new Option((typeof accountName==='function'?accountName(member.username,member.label):member.label)+' · só visualizar',member.user_id));
  selector.value=sharingTarget;
  el('sharedShelfName').textContent=sharingState.shelf ? sharingState.shelf.name+' · '+sharingState.members.length+' pessoa(s)' : 'Sua coleção ainda não está compartilhada.';
  el('createShelf').hidden=el('joinShelf').hidden=!!sharingState.shelf;
  el('inviteShelf').hidden=!sharingState.shelf || sharingState.shelf.owner_id!==user.id;
- el('viewCollectionLabel').hidden=!sharingState.shelf;
+ el('viewCollectionLabel').hidden=!sharingState.shelf && !(sharingState.friends||[]).length;
  const membersList=el('sharedMembers');membersList.replaceChildren();
  for(const member of sharingState.members){
   const li=document.createElement('li');li.textContent=(typeof accountName==='function'?accountName(member.username,member.label):member.label)+(member.user_id===user.id?' (você)':'');
@@ -63,7 +64,7 @@ function updateSharingControls(user) {
 function applySharingAccess() {
  const readonly=sharingReadonly;
  el('viewBanner').hidden=!readonly;
- if(readonly) el('viewBanner').textContent='Só visualizar · '+(sharingState.members.find(m=>m.user_id===sharingTarget)?.label||'Outra pessoa')+' · nenhuma alteração será salva nesta coleção.';
+ if(readonly) el('viewBanner').textContent='Só visualizar · '+(typeof collectionPersonName==='function'?collectionPersonName(sharingTarget):(sharingState.members.find(m=>m.user_id===sharingTarget)?.label||'Outra pessoa'))+' · nenhuma alteração será salva nesta coleção.';
  const allowed=typeof isAppOwner==='function' && isAppOwner();
  el('add').disabled=readonly || importing || !allowed;el('add').hidden=!allowed;
  el('migrationPanel').hidden=readonly || !allowed;

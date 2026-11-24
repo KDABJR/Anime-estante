@@ -1,28 +1,34 @@
-ANIME ESTANTE 2.3 — nomes únicos, permissões, avaliações e paginação
+ANIME ESTANTE 2.4 — aba Amigos e filtros individuais
 
-ATIVAR
-1. No SQL Editor do seu Supabase, abra uma nova consulta. Copie e execute todo o arquivo Nomes-e-Avaliacoes-2.3.sql. Ele requer que a atualização Compartilhar-Estante.sql (2.2) já tenha sido executada com sucesso.
-2. Extraia AnimeEstante-Online-2.3.zip. No GitHub KDABJR/Anime-estante, abra Add file > Upload files e envie os arquivos extraídos na raiz, substituindo os anteriores. Não envie a pasta externa. Confirme em Commit changes e aguarde a publicação do GitHub Pages.
-3. Feche e reabra o app Windows e o Android. O cabeçalho mostrará 2.3. Quem já usa o APK 2.2 não precisa reinstalar. No navegador, se aparecer a tela antiga, atualize com Ctrl+F5.
+ATUALIZAR
+1. No SQL Editor do seu Supabase, execute todo o arquivo Atualizar-2.4.sql. Ele já inclui a atualização 2.3 de nomes únicos, @KDAB e avaliações. Pode ser usado se você já aplicou a 2.3 ou se ainda não aplicou. É necessário ter executado Compartilhar-Estante.sql (2.2), que você já confirmou anteriormente.
+2. Extraia AnimeEstante-Online-2.4.zip. No repositório KDABJR/Anime-estante, abra Add file > Upload files. Envie os arquivos extraídos diretamente na raiz, substituindo os anteriores, sem a pasta externa. Confirme em Commit changes e aguarde a publicação do GitHub Pages.
+3. Reabra os aplicativos. O topo mostrará 2.4. Não é necessário trocar o EXE ou reinstalar o APK 2.2. Se usar o site no PC e ainda aparecer a versão antiga, atualize com Ctrl+F5.
 
-O QUE MUDA
-Nomes únicos: cada conta escolhe um nome em Meu nome e convites. O nome é único mesmo ignorando maiúsculas/minúsculas, com 3 a 24 caracteres: letras sem acento, números, ponto ou sublinhado. Depois de cadastrado, permanece vinculado à conta. @Ricardo e @ricardo identificam o mesmo nome.
-Sua conta atual recebe o nome reservado @KDAB. A permissão é ligada ao identificador protegido da conta existente no banco, não ao texto que alguém digita na tela. Se o banco não conseguir identificar essa conta com segurança, o SQL interrompe sem aplicar mudanças e mostra uma mensagem para ajustar a identificação.
-Somente @KDAB pode adicionar animes, importar XML em lote, importar temporada ou completar metadados em lote. A restrição existe no banco e na interface. As outras contas salvam apenas o próprio status, episódios, notas, favoritos e anotações nos títulos já compartilhados.
-Convites pelo nome: @KDAB cria a estante em Compartilhar estante, se ainda não criou. Em Meu nome e convites, digita o @nome da outra pessoa e envia o convite. A pessoa precisa estar cadastrada e ter escolhido seu nome. O convite aparece no app dela, com Aceitar e Recusar. O acesso só começa depois de aceitar. O convite expira em sete dias e pode ser cancelado por quem enviou.
-O convite por código continua disponível. O e-mail continua sendo usado para login e recuperação de senha; não é exibido na identificação social nem exigido para convidar uma pessoa.
-As contas mantêm progresso individual. A seleção Coleção exibida permite consultar outra pessoa em modo somente leitura. Há também um filtro Só favoritos da coleção exibida.
+AMIGOS
+Há duas abas: Coleção e Amigos.
+Em Amigos, clique + Adicionar amigo, digite o @nome único da pessoa e envie o pedido.
+A pessoa precisa ter conta e um nome único. A configuração Meu nome e convites agora fica dentro da aba Amigos. Sua conta principal continua @KDAB.
+Pedidos recebidos aparecem com Aceitar e Recusar. Os enviados permitem Cancelar pedido. Pedidos aguardando aceitação não liberam acesso.
+Após aceitar, cada pessoa aparece na lista da outra com Ver coleção e Remover amigo. Consultar a coleção permite ver notas, favoritos, status, episódios e anotações em modo somente leitura.
+Amizade permite consultar a coleção. Para usar a mesma lista de animes com progresso próprio, os convites de estante compartilhada continuam disponíveis em Compartilhar estante. A amizade não coloca a pessoa automaticamente em uma estante compartilhada.
+Remover amigo encerra o acesso concedido pela amizade. Caso ainda participem da mesma estante compartilhada, o acesso por essa estante permanece. Os registros pessoais não são apagados.
+Somente amigos aceitos ou pessoas que já compartilham sua estante podem consultar sua coleção. Não há acesso automático à coleção dos amigos de um amigo.
 
-AVALIAÇÕES
-Ao abrir um anime, a seção Avaliações da estante mostra o nome e a nota de cada participante, além da média e quantidade de avaliações.
-Notas de 0 a 10, com no máximo uma casa decimal. Exemplos válidos: 8,5; 9; 10,0. 8,55 é rejeitado. O ponto também é aceito ao digitar, mas a exibição usa vírgula.
-Campo vazio significa sem avaliação. Uma nota zero digitada explicitamente conta na média. Os zeros antigos, que antes significavam Sem nota, são convertidos para sem avaliação durante esta atualização. As notas antigas acima de zero são preservadas.
-A média considera somente quem avaliou e é exibida com uma casa decimal. Uma pessoa contribui com uma avaliação por título compartilhado. Pessoas sem acesso à estante não podem consultar suas avaliações.
+FILTROS INDIVIDUAIS
+A aba Coleção mostra botões de status com contagens: Todos, Pendente, Quero assistir, Assistindo, Assistido, Pausado, Abandonado e Ignorado.
+Cada contagem e filtro usa a coleção da conta selecionada. Se @KDAB marcar um anime como Assistido, somente o progresso de @KDAB será alterado. Na outra conta, ele continua com o status pessoal dela. O mesmo título pode ficar Assistido para você e Assistindo ou Pendente para outra pessoa.
+Ao abrir a coleção de um amigo, os botões filtram os dados dele em modo só leitura. Volte para Minha coleção no seletor para consultar ou editar seus próprios dados.
+Busca, filtro de favoritos, ordenação e paginação continuam funcionando sobre a coleção exibida. Os controles Anterior, Próxima e número da página permanecem corrigidos.
 
-PAGINAÇÃO
-Corrigidos os controles Anterior, Próxima e o número da página. Aparecem quando o resultado tem mais de 24 títulos e acompanham os filtros de busca, status e favoritos.
+RECURSOS MANTIDOS
+Somente @KDAB adiciona animes ou importa em lote. As outras contas editam apenas o próprio progresso, avaliações, favoritos e anotações nos títulos já compartilhados.
+Notas de 0 a 10 com no máximo uma casa decimal, exibidas com vírgula. Campo vazio é sem nota; zero digitado é uma avaliação e conta na média.
+Ao abrir um anime, a lista mostra os nomes, avaliações e a média das pessoas cuja coleção você pode consultar. Pessoas sem acesso não recebem dados privados de outros participantes.
+Animes, progresso, notas e favoritos atuais são preservados. Não reimporte seu XML da coleção atual.
 
-VALIDAÇÃO
-Testes em PostgreSQL local com contas separadas: nome único, nome @KDAB reservado à conta principal, convites destinados ao usuário correto, recusa e aceitação, bloqueio de adições por outros usuários, permissão de progresso individual, notas decimais, média incluindo zero e excluindo sem nota, migração repetível sem apagar avaliações.
-Testes da interface: 49 títulos em três páginas, navegação para frente e para trás, filtros com paginação, nomes e médias na tela do anime, vírgula e rejeição de duas casas decimais. Mantidos os testes de importação de temporada, capas, concorrência e renovação de sessão.
-O SQL não foi executado no seu Supabase real por esta sessão. A integração do GitHub continua sem permissão de escrita. Os passos de ativação acima precisam ser feitos na sua conta.
+VERIFICAÇÃO
+Testes locais com quatro contas: pedidos enviados, aceitos, recusados e cancelados; bloqueio antes de aceitar; leitura sem permissão de edição; remoção da amizade; leitura de capas; proteção da coleção de pessoas sem acesso; médias com dados apenas de pessoas autorizadas; progresso Assistido/Assistindo independente.
+Interface: aba Amigos, formulário por @nome, pedidos pendentes, visualização da coleção correta, filtros de status por conta, restrição de adicionar/importar somente para @KDAB, paginação com 49 títulos em três páginas e notas com uma casa decimal.
+O pacote SQL completo foi testado, incluindo a repetição sem apagar amizades, notas zero ou identidade administrativa.
+Esta atualização ainda precisa ser aplicada por você no Supabase e no GitHub. Não foi publicada automaticamente, pois a integração disponível não tem permissão de escrita no repositório.
