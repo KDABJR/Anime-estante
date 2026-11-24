@@ -58,6 +58,7 @@ textarea { min-height:85px }
 #friendsInfo,#addFriendError,#removeFriendError { color:var(--muted);overflow-wrap:anywhere; }
 #receivedFriends li,#sentFriends li { margin:10px 0; }#receivedFriends button,#sentFriends button { margin:4px; }
 </style>
+<link rel="stylesheet" href="layout.css?v=7">
 <main>
 <section id="loginPanel" aria-label="Entrar na estante">
 <h1>Anime Estante</h1><p>Acesse sua coleção no PC e no celular.</p>
@@ -69,42 +70,44 @@ textarea { min-height:85px }
 <p id="loginInfo" role="status"></p>
 </form></section>
 <div id="library" hidden>
-<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.4</div><h1>Anime Estante</h1></div><div class="actions"><button id="logout">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
+<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.5</div><h1>Anime Estante</h1></div><div class="actions"><span id="accountHandle" class="account-handle">Minha conta</span><button id="logout" class="quiet">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
 <div class="app-tabs" role="tablist" aria-label="Navegação principal"><button id="collectionTabButton" role="tab" aria-controls="collectionTab" aria-selected="true">Coleção</button><button id="friendsTabButton" role="tab" aria-controls="friendsTab" aria-selected="false">Amigos<span id="friendTabBadge"></span></button></div>
 <section id="collectionTab" role="tabpanel" aria-labelledby="collectionTabButton">
-<div class="filters">
-  <input id="search" type="search" placeholder="Buscar título" aria-label="Buscar título">
+<div class="collection-intro"><div><p class="eyebrow">SUA ESTANTE</p><h2 id="collectionHeading">Minha coleção</h2></div></div>
+<div class="filters search-bar">
+  <input id="search" type="search" placeholder="Buscar por título ou nome secundário" aria-label="Buscar título">
   <select id="filter" aria-label="Filtrar por status"><option value="">Todos os status</option></select>
 </div>
 
-<details class="migration"><summary>Compartilhar estante</summary>
+
+<label id="viewCollectionLabel" hidden>Coleção exibida<select id="viewCollection"><option value="">Minha coleção</option></select></label><p id="viewBanner" class="badge" role="status" hidden></p>
+<label class="inline"><input id="onlyFavorites" type="checkbox"> Só favoritos</label>
+<p id="connection" role="status">Conectando à estante…</p>
+<div class="filters collection-meta"><p id="count"></p>
+<select id="sort" aria-label="Ordenar">
+<option value="title">Título A–Z</option><option value="rating">Maiores notas</option>
+<option value="recent">Mais recentes</option><option value="old">Mais antigos</option>
+</select></div>
+
+
+<details id="ownerTools" class="tools-panel" hidden><summary>Ferramentas da coleção</summary><div class="tools-grid"><details id="seasonPanel" class="migration"><summary>Temporada japonesa e títulos</summary>
+<p id="seasonLabel">Temporada atual no Japão</p>
+<div class="actions" style="flex-wrap:wrap;justify-content:start"><button id="seasonImport">Importar temporada atual</button><button id="completeTitles">Completar títulos secundários</button></div>
+<label class="inline" style="margin-top:12px"><input id="seasonAuto" type="checkbox"> Importar automaticamente neste aparelho</label>
+<p>Adiciona como Pendente, com capa e dois títulos quando disponíveis. Preserva seus cadastros. A verificação automática ocorre diariamente com o app aberto e também quando a temporada muda. Ative em cada aparelho desejado.</p>
+<p class="small">Catálogo: AniList · origem Japão · sem conteúdo adulto explícito. Pode incluir filmes, especiais e estreias previstas.</p>
+<p id="seasonInfo" role="status"></p><ul id="seasonErrors" class="small" style="max-height:180px;overflow:auto"></ul></details><details id="migrationPanel" class="migration"><summary>Trazer coleção do PC</summary>
+<p>Exporte uma cópia pelo botão Nuvem do app Windows e selecione o arquivo aqui.</p>
+<input type="file" id="importFile" accept=".xml" aria-label="Arquivo da coleção">
+<button id="importButton" type="button">Importar coleção e capas</button>
+<p id="importInfo" role="status"></p></details><details id="sharingPanel" class="migration"><summary>Compartilhar estante</summary>
 <p>Os animes e suas capas entram na lista comum. Status, episódios, notas, favoritos e anotações continuam individuais. Os membros podem consultar a coleção uns dos outros em modo só leitura. Entrar também compartilha os títulos que você já tem.</p>
 <p id="sharedShelfName"></p><ul id="sharedMembers" class="small"></ul>
 <div class="row"><label>Seu nome de exibição<input id="memberLabel" maxlength="60" autocomplete="nickname"></label><label>Nome da estante<input id="shelfName" maxlength="80" placeholder="Nossa estante"></label></div>
 <div class="actions" style="margin-top:10px;flex-wrap:wrap"><button id="createShelf">Compartilhar minha estante</button><button id="inviteShelf" hidden>Gerar convite</button></div>
 <label style="margin-top:10px">Código recebido<input id="inviteCode" maxlength="64" autocomplete="off" spellcheck="false"></label><button id="joinShelf" style="margin-top:8px">Entrar na estante</button>
 <div id="invitationResult" hidden><label style="margin-top:10px">Envie este código para a outra pessoa<input id="generatedInvite" readonly></label><button id="copyInvite">Copiar convite</button></div>
-<p id="sharingInfo" role="status"></p></details>
-<label id="viewCollectionLabel" hidden>Coleção exibida<select id="viewCollection"><option value="">Minha coleção</option></select></label><p id="viewBanner" class="badge" role="status" hidden></p>
-<label class="inline"><input id="onlyFavorites" type="checkbox"> Só favoritos da coleção exibida</label>
-<p id="connection" role="status">Conectando à estante…</p>
-<div class="filters"><p id="count"></p>
-<select id="sort" aria-label="Ordenar">
-<option value="title">Título A–Z</option><option value="rating">Maiores notas</option>
-<option value="recent">Mais recentes</option><option value="old">Mais antigos</option>
-</select></div>
-<details id="seasonPanel" class="migration" open><summary>Temporada japonesa e títulos</summary>
-<p id="seasonLabel">Temporada atual no Japão</p>
-<div class="actions" style="flex-wrap:wrap;justify-content:start"><button id="seasonImport">Importar temporada atual</button><button id="completeTitles">Completar títulos secundários</button></div>
-<label class="inline" style="margin-top:12px"><input id="seasonAuto" type="checkbox"> Importar automaticamente neste aparelho</label>
-<p>Adiciona como Pendente, com capa e dois títulos quando disponíveis. Preserva seus cadastros. A verificação automática ocorre diariamente com o app aberto e também quando a temporada muda. Ative em cada aparelho desejado.</p>
-<p class="small">Catálogo: AniList · origem Japão · sem conteúdo adulto explícito. Pode incluir filmes, especiais e estreias previstas.</p>
-<p id="seasonInfo" role="status"></p><ul id="seasonErrors" class="small" style="max-height:180px;overflow:auto"></ul></details>
-<details id="migrationPanel" class="migration"><summary>Trazer coleção do PC</summary>
-<p>Exporte uma cópia pelo botão Nuvem do app Windows e selecione o arquivo aqui.</p>
-<input type="file" id="importFile" accept=".xml" aria-label="Arquivo da coleção">
-<button id="importButton" type="button">Importar coleção e capas</button>
-<p id="importInfo" role="status"></p></details>
+<p id="sharingInfo" role="status"></p></details></div></details>
 <div id="statusTabs" class="status-tabs" aria-label="Status da coleção exibida"></div>
 <section id="grid" aria-label="Cartões da estante"></section>
 <nav id="pages" aria-label="Paginação" hidden>
@@ -112,10 +115,10 @@ textarea { min-height:85px }
 </nav></section>
 <section id="friendsTab" role="tabpanel" aria-labelledby="friendsTabButton" hidden>
 <div class="friends-toolbar"><div><h2>Amigos</h2><p id="friendsCount" class="small"></p></div><button id="addFriendButton" class="primary">+ Adicionar amigo</button></div>
-<p class="small">Abra a coleção de um amigo para ver suas notas, favoritos e progresso em modo só leitura. Cada pessoa mantém seus próprios dados.</p>
+<p class="friends-description">Notas, favoritos e progresso dos seus amigos, com os dados de cada pessoa separados.</p>
 <p id="friendsInfo" role="status"></p><p id="emptyFriends" class="small">Ainda não há amigos. Adicione alguém pelo @nome.</p><div id="friendsList"></div>
 <section id="receivedFriendsSection" hidden><h3>Pedidos recebidos</h3><ul id="receivedFriends"></ul></section><section id="sentFriendsSection" hidden><h3>Pedidos enviados</h3><ul id="sentFriends"></ul></section>
-<details class="migration" open><summary>Meu nome e convites</summary>
+<details id="accountPanel" class="migration profile-panel" open><summary>Meu perfil e convites</summary>
 <p id="currentUsername"></p><label>Nome único<input id="username" maxlength="25" placeholder="@seunome" autocapitalize="none" autocomplete="off" spellcheck="false"></label><button id="saveUsername">Cadastrar nome único</button>
 <p class="small">De 3 a 24 caracteres: letras sem acento, números, ponto ou sublinhado. Maiúsculas e minúsculas representam o mesmo nome. Depois de cadastrado, o nome permanece vinculado à conta.</p>
 <div id="namedInviteControls" hidden><label>Convidar para a estante compartilhada<input id="targetUsername" maxlength="25" placeholder="@nome_da_pessoa" autocapitalize="none" spellcheck="false"></label><button id="inviteByUsername">Convidar para estante</button><p class="small">A pessoa recebe o convite no app. O acesso só começa depois que ela aceitar.</p></div>
@@ -141,7 +144,7 @@ textarea { min-height:85px }
   <div class="actions"><button id="cancel" type="button">Cancelar</button><button class="primary" id="save">Salvar na nuvem</button></div>
 </form>
 </dialog>
-<script src="cloud.js?v=6"></script>
+<script src="cloud.js?v=7"></script>
 <script>
 const el = id => document.getElementById(id);
 const editor = el('editor'), form = el('editForm');
@@ -328,7 +331,7 @@ el('next').addEventListener('click', () => { page++; render(); window.scrollTo(0
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 setInterval(() => { if (!document.hidden) load(); }, 8000);
 </script>
-<script src="sharing.js?v=6"></script><script src="accounts.js?v=6"></script><script src="friends.js?v=6"></script><script src="cloud-ui.js?v=6"></script><script src="season.js?v=6"></script><script>
+<script src="sharing.js?v=7"></script><script src="accounts.js?v=7"></script><script src="friends.js?v=7"></script><script src="cloud-ui.js?v=7"></script><script src="season.js?v=7"></script><script>
 function syncCompletedEpisodes(){if(el('status').value==='Assistido' && Number(el('total').value)>0) el('episode').value=el('total').value;}
 el('status').addEventListener('change',syncCompletedEpisodes);
 el('total').addEventListener('input',syncCompletedEpisodes);

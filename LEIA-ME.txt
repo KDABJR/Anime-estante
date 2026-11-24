@@ -1,34 +1,20 @@
-ANIME ESTANTE 2.4 — aba Amigos e filtros individuais
+ANIME ESTANTE 2.5 — organização visual
 
 ATUALIZAR
-1. No SQL Editor do seu Supabase, execute todo o arquivo Atualizar-2.4.sql. Ele já inclui a atualização 2.3 de nomes únicos, @KDAB e avaliações. Pode ser usado se você já aplicou a 2.3 ou se ainda não aplicou. É necessário ter executado Compartilhar-Estante.sql (2.2), que você já confirmou anteriormente.
-2. Extraia AnimeEstante-Online-2.4.zip. No repositório KDABJR/Anime-estante, abra Add file > Upload files. Envie os arquivos extraídos diretamente na raiz, substituindo os anteriores, sem a pasta externa. Confirme em Commit changes e aguarde a publicação do GitHub Pages.
-3. Reabra os aplicativos. O topo mostrará 2.4. Não é necessário trocar o EXE ou reinstalar o APK 2.2. Se usar o site no PC e ainda aparecer a versão antiga, atualize com Ctrl+F5.
+1. Extraia AnimeEstante-Online-2.5.zip.
+2. No GitHub KDABJR/Anime-estante, abra Add file > Upload files.
+3. Envie todos os arquivos extraídos na raiz, incluindo o novo layout.css, substituindo os anteriores. Não envie a pasta externa.
+4. Confirme em Commit changes, aguarde a publicação e reabra os aplicativos. O topo mostrará 2.5.
+Não precisa executar SQL ou reinstalar o EXE/APK. Esta versão usa a estrutura 2.4 que você já confirmou funcionando.
 
-AMIGOS
-Há duas abas: Coleção e Amigos.
-Em Amigos, clique + Adicionar amigo, digite o @nome único da pessoa e envie o pedido.
-A pessoa precisa ter conta e um nome único. A configuração Meu nome e convites agora fica dentro da aba Amigos. Sua conta principal continua @KDAB.
-Pedidos recebidos aparecem com Aceitar e Recusar. Os enviados permitem Cancelar pedido. Pedidos aguardando aceitação não liberam acesso.
-Após aceitar, cada pessoa aparece na lista da outra com Ver coleção e Remover amigo. Consultar a coleção permite ver notas, favoritos, status, episódios e anotações em modo somente leitura.
-Amizade permite consultar a coleção. Para usar a mesma lista de animes com progresso próprio, os convites de estante compartilhada continuam disponíveis em Compartilhar estante. A amizade não coloca a pessoa automaticamente em uma estante compartilhada.
-Remover amigo encerra o acesso concedido pela amizade. Caso ainda participem da mesma estante compartilhada, o acesso por essa estante permanece. Os registros pessoais não são apagados.
-Somente amigos aceitos ou pessoas que já compartilham sua estante podem consultar sua coleção. Não há acesso automático à coleção dos amigos de um amigo.
-
-FILTROS INDIVIDUAIS
-A aba Coleção mostra botões de status com contagens: Todos, Pendente, Quero assistir, Assistindo, Assistido, Pausado, Abandonado e Ignorado.
-Cada contagem e filtro usa a coleção da conta selecionada. Se @KDAB marcar um anime como Assistido, somente o progresso de @KDAB será alterado. Na outra conta, ele continua com o status pessoal dela. O mesmo título pode ficar Assistido para você e Assistindo ou Pendente para outra pessoa.
-Ao abrir a coleção de um amigo, os botões filtram os dados dele em modo só leitura. Volte para Minha coleção no seletor para consultar ou editar seus próprios dados.
-Busca, filtro de favoritos, ordenação e paginação continuam funcionando sobre a coleção exibida. Os controles Anterior, Próxima e número da página permanecem corrigidos.
-
-RECURSOS MANTIDOS
-Somente @KDAB adiciona animes ou importa em lote. As outras contas editam apenas o próprio progresso, avaliações, favoritos e anotações nos títulos já compartilhados.
-Notas de 0 a 10 com no máximo uma casa decimal, exibidas com vírgula. Campo vazio é sem nota; zero digitado é uma avaliação e conta na média.
-Ao abrir um anime, a lista mostra os nomes, avaliações e a média das pessoas cuja coleção você pode consultar. Pessoas sem acesso não recebem dados privados de outros participantes.
-Animes, progresso, notas e favoritos atuais são preservados. Não reimporte seu XML da coleção atual.
+MUDANÇAS
+Compartilhar estante agora fica somente na conta principal @KDAB. Ela pode abrir Ferramentas da coleção e, depois, Compartilhar estante. Nas outras contas, o painel não aparece. Os compartilhamentos atuais continuam funcionando.
+Ferramentas da coleção reúne importação de temporada, importação do XML e compartilhamento. Fica recolhido para dar mais espaço à coleção. Só aparece para @KDAB e quando está exibindo a própria coleção.
+Layout com mais espaço entre os elementos, busca e ordenação próximas, botões de status em formato de pílulas, capas maiores e cartões com textos mais legíveis. No computador, a grade acomoda até cinco cartões por linha; no celular, duas colunas.
+O nome da conta aparece no cabeçalho. Ao consultar um amigo, o título identifica a coleção exibida. As abas Coleção e Amigos têm maior destaque; os cartões de amigos e a tela de edição também foram reorganizados.
+Busca, paginação, notas com uma casa decimal, média, favoritos e progresso individual permanecem disponíveis.
 
 VERIFICAÇÃO
-Testes locais com quatro contas: pedidos enviados, aceitos, recusados e cancelados; bloqueio antes de aceitar; leitura sem permissão de edição; remoção da amizade; leitura de capas; proteção da coleção de pessoas sem acesso; médias com dados apenas de pessoas autorizadas; progresso Assistido/Assistindo independente.
-Interface: aba Amigos, formulário por @nome, pedidos pendentes, visualização da coleção correta, filtros de status por conta, restrição de adicionar/importar somente para @KDAB, paginação com 49 títulos em três páginas e notas com uma casa decimal.
-O pacote SQL completo foi testado, incluindo a repetição sem apagar amizades, notas zero ou identidade administrativa.
-Esta atualização ainda precisa ser aplicada por você no Supabase e no GitHub. Não foi publicada automaticamente, pois a integração disponível não tem permissão de escrita no repositório.
+Testes dos controles passaram: painel de compartilhar visível para @KDAB e oculto para outra conta; ferramentas exclusivas da conta principal; filtros por pessoa, amigos, campos somente leitura, paginação, notas, renovação de sessão e importação de temporada.
+Não foi possível gerar capturas do navegador nesta sessão. Confira a aparência nos seus dispositivos após publicar. Não foram alterados dados reais de sua coleção.
+A integração do GitHub continua sem permissão de escrita; esta atualização ainda precisa ser publicada por você.

@@ -68,6 +68,9 @@ function applySharingAccess() {
  const allowed=typeof isAppOwner==='function' && isAppOwner();
  el('add').disabled=readonly || importing || !allowed;el('add').hidden=!allowed;
  el('migrationPanel').hidden=readonly || !allowed;
+ if(el('sharingPanel'))el('sharingPanel').hidden=readonly || !allowed;
+ if(el('ownerTools'))el('ownerTools').hidden=readonly || !allowed;
+ if(el('collectionHeading'))el('collectionHeading').textContent=readonly?'Coleção de '+(typeof collectionPersonName==='function'?collectionPersonName(sharingTarget):'outra pessoa'):'Minha coleção';
  el('seasonPanel').hidden=readonly || !allowed;
 }
 function setSharedEditorAccess(){

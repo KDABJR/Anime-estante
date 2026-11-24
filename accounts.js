@@ -4,6 +4,7 @@ function accountName(username,label='Pessoa'){return username ? '@'+(username===
 let usernameLoadedFor=null;
 function updateAccountControls(user){
  const profile=sharingState.profile;
+ if(el('accountHandle'))el('accountHandle').textContent=profile?accountName(profile.username):'Minha conta';
  el('currentUsername').textContent=profile?'Seu nome único: '+accountName(profile.username):'Escolha seu nome único para receber convites.';
  if(usernameLoadedFor!==user.id || profile){el('username').value=profile?.username||'';usernameLoadedFor=user.id;}
  el('username').disabled=!!profile;el('saveUsername').hidden=!!profile;
