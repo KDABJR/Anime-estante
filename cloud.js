@@ -120,6 +120,7 @@ async function uploadCover(id, encoded) {
   return path;
 }
 async function saveCloud(change) {
+  if(!change.Id && typeof isAppOwner==='function' && !isAppOwner())throw new Error('Somente @KDAB pode adicionar animes.');
   if(typeof sharingReadonly!=="undefined" && sharingReadonly) throw new Error("Esta coleção está em modo só leitura.");
   const user = await currentUser();
   const id = uuid(change.Id);
@@ -136,7 +137,7 @@ async function saveCloud(change) {
   if (!STATUSES.includes(row.status) || !row.title || !Number.isInteger(row.episode) ||
       !Number.isInteger(row.total) || row.episode < 0 || row.total < 0 ||
       row.episode > 100000 || row.total > 100000 || (row.total && row.episode > row.total) ||
-      !Number.isInteger(row.rating) || row.rating < 0 || row.rating > 10)
+      (row.rating !== null && (!Number.isFinite(row.rating) || row.rating < 0 || row.rating > 10 || Math.abs(row.rating*10-Math.round(row.rating*10))>1e-8)))
     throw new Error('Revise os episódios, o status e a nota.');
   if(original?._virtual) row.shared_title_id=original.shared_title_id;
   const existing = original && !original._virtual;

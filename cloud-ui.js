@@ -28,7 +28,7 @@ el('logout').addEventListener('click', () => {
   if (pending || importing) return;
   keepSession(null);
   items = []; cloudRows = []; lastData = '';
-  if(typeof sharingState!=='undefined'){sharingState={shelf:null,members:[]};sharingTarget='';sharingReadonly=false;el('generatedInvite').value='';el('invitationResult').hidden=true;el('inviteCode').value='';el('sharingInfo').textContent='';}
+  if(typeof sharingState!=='undefined'){sharingState={shelf:null,members:[]};sharingTarget='';sharingReadonly=false;el('generatedInvite').value='';el('invitationResult').hidden=true;el('inviteCode').value='';el('sharingInfo').textContent='';el('accountInfo').textContent='';el('username').value='';el('targetUsername').value='';el('incomingInvites').replaceChildren();el('outgoingInvites').replaceChildren();usernameLoadedFor=null;}
   el('grid').replaceChildren();
   el('library').hidden = true;
   el('loginPanel').hidden = false;
@@ -45,12 +45,12 @@ function parseCollection(source) {
     const date = text('AddedAtUtc');
     const row = { id: uuid(text('Id')), title: text('Title').trim(), alternate_title: text('AlternateTitle') || null,
       status: text('Status') || 'Pendente', episode: Number(text('Episode') || 0), total: Number(text('Total') || 0),
-      rating: Number(text('Rating') || 0), favorite: text('Favorite') === 'true', notes: text('Notes'),
+      rating: Number(text('Rating') || 0) || null, favorite: text('Favorite') === 'true', notes: text('Notes'),
       seasonal_source: text('SeasonalSource') || null, imported_folder: text('ImportedFolder') || null,
       imported_season: Number(text('ImportedSeason') || 0), added_at: date && Number.isFinite(Date.parse(date)) ? date : null,
       cover: text('Cover').replace(/\s/g,'') };
     if (!row.title || !STATUSES.includes(row.status) || !Number.isInteger(row.episode) || !Number.isInteger(row.total) ||
-        !Number.isInteger(row.rating) || row.episode < 0 || row.total < 0 || row.episode > 100000 || row.total > 100000 ||
+        (row.rating!==null && (!Number.isFinite(row.rating) || Math.abs(row.rating*10-Math.round(row.rating*10))>1e-8)) || row.episode < 0 || row.total < 0 || row.episode > 100000 || row.total > 100000 ||
         row.rating < 0 || row.rating > 10 || (row.total > 0 && row.episode > row.total))
       throw new Error('Revise os episódios ou a nota de ' + (row.title || 'um cadastro sem título') + ' no app do PC antes de importar.');
     return row;
@@ -58,7 +58,7 @@ function parseCollection(source) {
 }
 
 el('importButton').addEventListener('click', async () => {
-  if (importing || pending || loading) return;
+  if (importing || pending || loading || (typeof isAppOwner==='function' && !isAppOwner())) return;
   const file = el('importFile').files[0];
   if (!file) { el('importInfo').textContent = 'Selecione o arquivo XML da coleção.'; return; }
   if (file.size > 200 * 1024 * 1024) { el('importInfo').textContent = 'O arquivo excede 200 MB.'; return; }

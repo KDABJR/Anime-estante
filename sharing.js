@@ -10,7 +10,7 @@ function virtualSharedRows(rows,catalog,userId) {
  for(const title of catalog) if(!linked.has(title.id)) result.push({id:title.id,user_id:userId,shared_title_id:title.id,
   title:title.title,alternate_title:title.alternate_title,total:title.total,cover_path:title.cover_path,
   seasonal_source:title.seasonal_source,added_at:title.added_at,updated_at:'shared:'+title.id,
-  status:'Pendente',episode:0,rating:0,favorite:false,notes:'',deleted_at:null,_virtual:true});
+  status:'Pendente',episode:0,rating:null,favorite:false,notes:'',deleted_at:null,_virtual:true});
  return result;
 }
 async function sharedCollectionRows(ownRows) {
@@ -39,7 +39,7 @@ async function sharedCollectionRows(ownRows) {
 }
 function updateSharingControls(user) {
  const selector=el('viewCollection');selector.replaceChildren(new Option('Minha coleção',''));
- for(const member of sharingState.members) if(member.user_id!==user.id) selector.add(new Option(member.label+' · só visualizar',member.user_id));
+ for(const member of sharingState.members) if(member.user_id!==user.id) selector.add(new Option((typeof accountName==='function'?accountName(member.username,member.label):member.label)+' · só visualizar',member.user_id));
  selector.value=sharingTarget;
  el('sharedShelfName').textContent=sharingState.shelf ? sharingState.shelf.name+' · '+sharingState.members.length+' pessoa(s)' : 'Sua coleção ainda não está compartilhada.';
  el('createShelf').hidden=el('joinShelf').hidden=!!sharingState.shelf;
@@ -47,7 +47,7 @@ function updateSharingControls(user) {
  el('viewCollectionLabel').hidden=!sharingState.shelf;
  const membersList=el('sharedMembers');membersList.replaceChildren();
  for(const member of sharingState.members){
-  const li=document.createElement('li');li.textContent=member.label+(member.user_id===user.id?' (você)':'');
+  const li=document.createElement('li');li.textContent=(typeof accountName==='function'?accountName(member.username,member.label):member.label)+(member.user_id===user.id?' (você)':'');
   if(member.user_id!==sharingState.shelf.owner_id && (sharingState.shelf.owner_id===user.id || member.user_id===user.id)){
    const button=document.createElement('button');button.textContent=member.user_id===user.id?'Sair da estante':'Remover acesso';
    button.style.marginLeft='8px';button.addEventListener('click',()=>{
@@ -57,25 +57,28 @@ function updateSharingControls(user) {
    });li.append(button);
   }membersList.append(li);
  }
+ if(typeof updateAccountControls==='function')updateAccountControls(user);
  applySharingAccess();
 }
 function applySharingAccess() {
  const readonly=sharingReadonly;
  el('viewBanner').hidden=!readonly;
  if(readonly) el('viewBanner').textContent='Só visualizar · '+(sharingState.members.find(m=>m.user_id===sharingTarget)?.label||'Outra pessoa')+' · nenhuma alteração será salva nesta coleção.';
- el('add').disabled=readonly || importing;
- el('migrationPanel').hidden=readonly;
- el('seasonPanel').hidden=readonly;
+ const allowed=typeof isAppOwner==='function' && isAppOwner();
+ el('add').disabled=readonly || importing || !allowed;el('add').hidden=!allowed;
+ el('migrationPanel').hidden=readonly || !allowed;
+ el('seasonPanel').hidden=readonly || !allowed;
 }
 function setSharedEditorAccess(){
  for(const field of form.querySelectorAll('input,select,textarea'))field.disabled=sharingReadonly;
  el('save').hidden=sharingReadonly;
+ if(!sharingReadonly && typeof isAppOwner==='function' && !isAppOwner())for(const id of ['title','alternate','total','cover','removeCover'])el(id).disabled=true;
  if(sharingReadonly)el('editorTitle').textContent='Consultar anime · só leitura';
 }
 function personalSharedRow(row, fields={}) {
  return {user_id:session.user.id,id:row.id,shared_title_id:row.shared_title_id,title:row.title,
   alternate_title:row.alternate_title,total:row.total,cover_path:row.cover_path,seasonal_source:row.seasonal_source,
-  added_at:row.added_at,status:'Pendente',episode:0,rating:0,favorite:false,notes:'',...fields};
+  added_at:row.added_at,status:'Pendente',episode:0,rating:null,favorite:false,notes:'',...fields};
 }
 async function saveVirtualMetadata(row,fields) {
  if(sharingReadonly)throw new Error('Esta coleção está em modo só leitura.');

@@ -63,11 +63,16 @@ textarea { min-height:85px }
 <p id="loginInfo" role="status"></p>
 </form></section>
 <div id="library" hidden>
-<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.2</div><h1>Anime Estante</h1></div><div class="actions"><button id="logout">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
+<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.3</div><h1>Anime Estante</h1></div><div class="actions"><button id="logout">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
 <div class="filters">
   <input id="search" type="search" placeholder="Buscar título" aria-label="Buscar título">
   <select id="filter" aria-label="Filtrar por status"><option value="">Todos os status</option></select>
 </div>
+<details class="migration" open><summary>Meu nome e convites</summary>
+<p id="currentUsername"></p><label>Nome único<input id="username" maxlength="25" placeholder="@seunome" autocapitalize="none" autocomplete="off" spellcheck="false"></label><button id="saveUsername">Cadastrar nome único</button>
+<p class="small">De 3 a 24 caracteres: letras sem acento, números, ponto ou sublinhado. Maiúsculas e minúsculas representam o mesmo nome. Depois de cadastrado, o nome permanece vinculado à conta.</p>
+<div id="namedInviteControls" hidden><label>Convidar pessoa pelo nome<input id="targetUsername" maxlength="25" placeholder="@nome_da_pessoa" autocapitalize="none" spellcheck="false"></label><button id="inviteByUsername">Enviar convite</button><p class="small">A pessoa recebe o convite no app. O acesso só começa depois que ela aceitar.</p></div>
+<p id="incomingLabel" hidden>Convites recebidos · aceitar compartilha sua coleção com os participantes, mantendo seu progresso individual.</p><ul id="incomingInvites"></ul><ul id="outgoingInvites"></ul><p id="accountInfo" role="status"></p></details>
 <details class="migration"><summary>Compartilhar estante</summary>
 <p>Os animes e suas capas entram na lista comum. Status, episódios, notas, favoritos e anotações continuam individuais. Os membros podem consultar a coleção uns dos outros em modo só leitura. Entrar também compartilha os títulos que você já tem.</p>
 <p id="sharedShelfName"></p><ul id="sharedMembers" class="small"></ul>
@@ -77,6 +82,7 @@ textarea { min-height:85px }
 <div id="invitationResult" hidden><label style="margin-top:10px">Envie este código para a outra pessoa<input id="generatedInvite" readonly></label><button id="copyInvite">Copiar convite</button></div>
 <p id="sharingInfo" role="status"></p></details>
 <label id="viewCollectionLabel" hidden>Coleção exibida<select id="viewCollection"><option value="">Minha coleção</option></select></label><p id="viewBanner" class="badge" role="status" hidden></p>
+<label class="inline"><input id="onlyFavorites" type="checkbox"> Só favoritos da coleção exibida</label>
 <p id="connection" role="status">Conectando à estante…</p>
 <div class="filters"><p id="count"></p>
 <select id="sort" aria-label="Ordenar">
@@ -106,18 +112,19 @@ textarea { min-height:85px }
   <h2 id="editorTitle">Editar anime</h2>
   <label>Título principal <input id="title" required maxlength="1000"></label>
   <label>Título secundário <input id="alternate" maxlength="1000"></label>
-  <div class="row"><label>Status <select id="status" required></select></label><label>Nota <select id="rating"></select></label></div>
+  <div class="row"><label>Status <select id="status" required></select></label><label>Nota (0 a 10)<input id="rating" type="text" inputmode="decimal" maxlength="4" placeholder="Sem nota" pattern="(?:10(?:[.,]0)?|[0-9](?:[.,][0-9])?)"></label></div>
   <div class="row"><label>Último episódio visto <input id="episode" type="number" min="0" max="100000" value="0"></label>
   <label>Total de episódios (0 = indefinido) <input id="total" type="number" min="0" max="100000" value="0"></label></div>
   <label class="inline"><input id="favorite" type="checkbox"> Favorito</label>
   <label>Anotações <textarea id="notes"></textarea></label>
   <label>Capa (até 10 MB) <input id="cover" type="file" accept="image/jpeg,image/png,image/bmp,image/gif"></label>
   <label id="removeWrap" class="inline"><input id="removeCover" type="checkbox"> Remover capa atual</label>
+  <section aria-label="Avaliações das pessoas"><h3>Avaliações da estante</h3><p id="ratingsAverage" role="status"></p><ul id="ratingsList"></ul><p class="small">A média considera quem avaliou. Deixe o campo vazio para ficar sem nota; a nota zero também entra na média.</p></section>
   <p id="error" role="alert"></p>
   <div class="actions"><button id="cancel" type="button">Cancelar</button><button class="primary" id="save">Salvar na nuvem</button></div>
 </form>
 </dialog>
-<script src="cloud.js?v=4"></script>
+<script src="cloud.js?v=5"></script>
 <script>
 const el = id => document.getElementById(id);
 const editor = el('editor'), form = el('editForm');
@@ -174,10 +181,11 @@ function render() {
   const term = normalized(el('search').value.trim());
   const filter = el('filter').value;
   const matches = items.filter(item => (!filter || item.Status === filter) &&
+    (!el('onlyFavorites').checked || item.Favorite) &&
     (normalized(item.Title).includes(term) || normalized(item.AlternateTitle).includes(term)));
   matches.sort((a,b) => {
     const mode = el('sort').value;
-    const score = mode === 'rating' ? b.Rating-a.Rating :
+    const score = mode === 'rating' ? (b.Rating ?? -1)-(a.Rating ?? -1) :
       mode === 'recent' || mode === 'old' ?
         (a.AddedAt && b.AddedAt ? (Date.parse(a.AddedAt)-Date.parse(b.AddedAt))*(mode==='recent'?-1:1) :
           a.AddedAt?-1:b.AddedAt?1:0) : 0;
@@ -212,13 +220,13 @@ function render() {
     const episodes = item.Status === 'Assistido' ? (item.Total ? item.Total + '/' + item.Total + ' ep. · Todos vistos' : 'Todos os episódios vistos') : item.Total ? item.Episode + '/' + item.Total + ' ep.' :
       item.Episode ? 'Ep. ' + item.Episode : 'Sem episódios vistos';
     body.append(textNode('span', item.Status, 'badge'),
-      textNode('span', episodes + (item.Rating ? ' · ' + item.Rating + '/10' : ''), 'small'));
+      textNode('span', episodes + (item.Rating != null ? ' · ' + formatRating(item.Rating) + '/10' : ''), 'small'));
     card.append(art, body);
     if (item.Favorite) card.append(textNode('span', '★', 'star'));
     grid.append(card);
   }
   el('count').textContent = matches.length ? matches.length + ' título(s)' : 'Nenhum título encontrado.';
-  el('pages').style.display = totalPages > 1 ? 'flex' : 'none';
+  el('pages').hidden = totalPages <= 1;
   el('pageNumber').textContent = (page + 1) + '/' + totalPages;
   el('previous').disabled = page === 0;
   el('next').disabled = page >= totalPages - 1;
@@ -234,13 +242,14 @@ function edit(item) {
   el('status').value = item?.Status || 'Pendente';
   el('episode').value = item?.Status === 'Assistido' && item.Total ? item.Total : item?.Episode || 0;
   el('total').value = item?.Total || 0;
-  el('rating').value = item?.Rating || 0;
+  el('rating').value = item?.Rating != null ? String(item.Rating).replace('.',',') : '';
   el('favorite').checked = item?.Favorite || false;
   el('notes').value = item?.Notes || '';
   el('removeWrap').style.display = item?.HasCover ? 'flex' : 'none';
   el('error').textContent = '';
   if(typeof setSharedEditorAccess==='function')setSharedEditorAccess();
   editor.showModal();
+  if(typeof showAnimeRatings==='function')showAnimeRatings(item);
 }
 
 function base64(file) {
@@ -267,7 +276,7 @@ form.addEventListener('submit', async event => {
       Title: el('title').value,
       AlternateTitle: active && alternate === active.AlternateTitle ? null : alternate,
       Status: el('status').value, Episode: Number(el('episode').value), Total: Number(el('total').value),
-      Rating: Number(el('rating').value), Favorite: el('favorite').checked, Notes: el('notes').value,
+      Rating: parseRating(el('rating').value), Favorite: el('favorite').checked, Notes: el('notes').value,
       RemoveCover: el('removeCover').checked, Cover: file ? await base64(file) : null
     };
     await request('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(change) }, 45000);
@@ -281,7 +290,7 @@ form.addEventListener('submit', async event => {
   }
 });
 
-for (let rating = 0; rating <= 10; rating++) el('rating').add(new Option(rating ? rating + '/10' : 'Sem nota', rating));
+el('onlyFavorites').addEventListener('change',()=>{page=0;render();});
 el('add').addEventListener('click', () => edit(null));
 el('cancel').addEventListener('click', () => editor.close());
 editor.addEventListener('cancel', event => { if (pending) event.preventDefault(); });
@@ -292,7 +301,7 @@ el('next').addEventListener('click', () => { page++; render(); window.scrollTo(0
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 setInterval(() => { if (!document.hidden) load(); }, 8000);
 </script>
-<script src="sharing.js?v=4"></script><script src="cloud-ui.js?v=4"></script><script src="season.js?v=4"></script><script>
+<script src="sharing.js?v=5"></script><script src="accounts.js?v=5"></script><script src="cloud-ui.js?v=5"></script><script src="season.js?v=5"></script><script>
 function syncCompletedEpisodes(){if(el('status').value==='Assistido' && Number(el('total').value)>0) el('episode').value=el('total').value;}
 el('status').addEventListener('change',syncCompletedEpisodes);
 el('total').addEventListener('input',syncCompletedEpisodes);

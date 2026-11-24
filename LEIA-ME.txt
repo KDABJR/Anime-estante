@@ -1,29 +1,28 @@
-ANIME ESTANTE ONLINE 2.2 — estante compartilhada com progresso individual
+ANIME ESTANTE 2.3 — nomes únicos, permissões, avaliações e paginação
 
 ATIVAR
-1. No Supabase do seu projeto, abra SQL Editor > New query. Copie todo o conteúdo de Compartilhar-Estante.sql e execute em Run. O arquivo mantém seus animes atuais. Apenas criar ou entrar em uma estante, depois, publica seus títulos no catálogo comum.
-2. Extraia AnimeEstante-Online-Compartilhado.zip. No repositório https://github.com/KDABJR/Anime-estante, abra Add file > Upload files. Envie os arquivos extraídos na raiz, sem a pasta externa, substituindo os anteriores. Confirme em Commit changes e aguarde o GitHub Pages publicar.
-3. Reabra o aplicativo Windows. Não precisa trocar o EXE. O cabeçalho mostrará versão 2.2.
-4. No Android, instale AnimeEstante-Android-Online-2.2.apk sobre o atual e reabra. Mantém o pacote e a assinatura do app anterior.
+1. No SQL Editor do seu Supabase, abra uma nova consulta. Copie e execute todo o arquivo Nomes-e-Avaliacoes-2.3.sql. Ele requer que a atualização Compartilhar-Estante.sql (2.2) já tenha sido executada com sucesso.
+2. Extraia AnimeEstante-Online-2.3.zip. No GitHub KDABJR/Anime-estante, abra Add file > Upload files e envie os arquivos extraídos na raiz, substituindo os anteriores. Não envie a pasta externa. Confirme em Commit changes e aguarde a publicação do GitHub Pages.
+3. Feche e reabra o app Windows e o Android. O cabeçalho mostrará 2.3. Quem já usa o APK 2.2 não precisa reinstalar. No navegador, se aparecer a tela antiga, atualize com Ctrl+F5.
 
-USAR
-Na conta que já tem a coleção, abra Compartilhar estante, preencha seu nome de exibição e o nome da estante e clique Compartilhar minha estante. Seus títulos e capas passarão a integrar a lista comum. Seu progresso e suas notas permanecem na sua própria conta.
-Clique Gerar convite e envie o código para a pessoa desejada. Ele vale por 48 horas, para uma pessoa. Cada novo código cancela o anterior. Gere outro para convidar mais pessoas.
-A outra pessoa cria e confirma sua própria conta pelo app, entra com seu e-mail e senha, preenche seu nome e cola o código em Código recebido. Depois clica Entrar na estante.
-A lista de títulos é compartilhada. Para a outra pessoa, animes sem progresso pessoal começam em Pendente, com episódios vistos, notas e favoritos vazios. Se ela já tiver registros na conta, o progresso existente é preservado e seus títulos também entram no catálogo comum.
-Cada pessoa continua editando só sua própria coleção. Para consultar outra, escolha a pessoa em Coleção exibida. O formulário fica somente para leitura. Status, episódios, avaliação, favoritos e anotações são visíveis aos participantes do grupo, mas só o titular pode alterá-los.
-Ao adicionar um novo anime, o título e a capa aparecem na lista dos participantes após a próxima atualização, em cerca de oito segundos. Atualizações automáticas da temporada também publicam seus novos títulos no catálogo comum.
-Quem criou a estante pode remover o acesso dos demais participantes. Os outros podem sair. Seus registros pessoais já salvos são preservados. Ao sair, perde o acesso aos títulos ainda sem registro pessoal e às capas pertencentes aos outros membros.
+O QUE MUDA
+Nomes únicos: cada conta escolhe um nome em Meu nome e convites. O nome é único mesmo ignorando maiúsculas/minúsculas, com 3 a 24 caracteres: letras sem acento, números, ponto ou sublinhado. Depois de cadastrado, permanece vinculado à conta. @Ricardo e @ricardo identificam o mesmo nome.
+Sua conta atual recebe o nome reservado @KDAB. A permissão é ligada ao identificador protegido da conta existente no banco, não ao texto que alguém digita na tela. Se o banco não conseguir identificar essa conta com segurança, o SQL interrompe sem aplicar mudanças e mostra uma mensagem para ajustar a identificação.
+Somente @KDAB pode adicionar animes, importar XML em lote, importar temporada ou completar metadados em lote. A restrição existe no banco e na interface. As outras contas salvam apenas o próprio status, episódios, notas, favoritos e anotações nos títulos já compartilhados.
+Convites pelo nome: @KDAB cria a estante em Compartilhar estante, se ainda não criou. Em Meu nome e convites, digita o @nome da outra pessoa e envia o convite. A pessoa precisa estar cadastrada e ter escolhido seu nome. O convite aparece no app dela, com Aceitar e Recusar. O acesso só começa depois de aceitar. O convite expira em sete dias e pode ser cancelado por quem enviou.
+O convite por código continua disponível. O e-mail continua sendo usado para login e recuperação de senha; não é exibido na identificação social nem exigido para convidar uma pessoa.
+As contas mantêm progresso individual. A seleção Coleção exibida permite consultar outra pessoa em modo somente leitura. Há também um filtro Só favoritos da coleção exibida.
 
-LIMITES DESTA VERSÃO
-Cada conta participa de uma estante compartilhada por vez. Quem criou permanece como responsável. Campos pessoais não são sincronizados entre pessoas; eles sincronizam entre os aparelhos da mesma conta.
-O catálogo comum mantém os títulos e capas cadastrados inicialmente, completando metadados ausentes. Personalizações posteriores de título/capa em um cadastro individual não substituem automaticamente as personalizações de outro participante.
-Participar permite consultar mutuamente a coleção, inclusive anotações. Não há conta compartilhada, senha coletiva ou acesso de pessoas que não tenham convite.
-As funções de temporada e títulos secundários da versão 2.1 estão incluídas. A execução automática da temporada exige app aberto e internet.
-Não importe de novo o XML da coleção atual. Ele só é necessário para trazer uma coleção local que ainda não esteja na conta correspondente.
+AVALIAÇÕES
+Ao abrir um anime, a seção Avaliações da estante mostra o nome e a nota de cada participante, além da média e quantidade de avaliações.
+Notas de 0 a 10, com no máximo uma casa decimal. Exemplos válidos: 8,5; 9; 10,0. 8,55 é rejeitado. O ponto também é aceito ao digitar, mas a exibição usa vírgula.
+Campo vazio significa sem avaliação. Uma nota zero digitada explicitamente conta na média. Os zeros antigos, que antes significavam Sem nota, são convertidos para sem avaliação durante esta atualização. As notas antigas acima de zero são preservadas.
+A média considera somente quem avaliou e é exibida com uma casa decimal. Uma pessoa contribui com uma avaliação por título compartilhado. Pessoas sem acesso à estante não podem consultar suas avaliações.
 
-VERIFICAÇÃO
-Banco PostgreSQL local com três contas: preservação do progresso existente, convites de uso único, substituição de convites, bloqueio de pessoas externas, consulta dos participantes sem permissão de escrita, leitura de capas por associação, revogação e preservação dos registros pessoais. Interface: progresso Pendente independente, gravação apenas do titular, seleção só leitura, scripts e importação de temporada. APK compilado e assinatura validada.
-O SQL não foi executado no seu banco real e os arquivos ainda precisam ser enviados ao GitHub. Esta integração do GitHub não tem permissão para publicá-los. Não tenho acesso administrativo ao seu Supabase por meio da chave pública do app.
+PAGINAÇÃO
+Corrigidos os controles Anterior, Próxima e o número da página. Aparecem quando o resultado tem mais de 24 títulos e acompanham os filtros de busca, status e favoritos.
 
-Documentação usada: https://supabase.com/docs/guides/database/functions e https://supabase.com/docs/guides/database/postgres/row-level-security
+VALIDAÇÃO
+Testes em PostgreSQL local com contas separadas: nome único, nome @KDAB reservado à conta principal, convites destinados ao usuário correto, recusa e aceitação, bloqueio de adições por outros usuários, permissão de progresso individual, notas decimais, média incluindo zero e excluindo sem nota, migração repetível sem apagar avaliações.
+Testes da interface: 49 títulos em três páginas, navegação para frente e para trás, filtros com paginação, nomes e médias na tela do anime, vírgula e rejeição de duas casas decimais. Mantidos os testes de importação de temporada, capas, concorrência e renovação de sessão.
+O SQL não foi executado no seu Supabase real por esta sessão. A integração do GitHub continua sem permissão de escrita. Os passos de ativação acima precisam ser feitos na sua conta.

@@ -104,7 +104,7 @@ async function importSeason(onProgress) {
       try {cover=await catalogCover(id,item.coverImage?.large);}
       catch(error){failures.push(title+' — '+error.message);}
       const rowToAdd={id,user_id:user.id,title,alternate_title:secondaryTitle(item,title),status:'Pendente',episode:0,
-        total:Number.isInteger(item.episodes)&&item.episodes>0?item.episodes:0,rating:0,favorite:false,notes:'',
+        total:Number.isInteger(item.episodes)&&item.episodes>0?item.episodes:0,rating:null,favorite:false,notes:'',
         cover_path:cover,seasonal_source:mediaSources(item)[0],added_at:new Date().toISOString()};
       const response=await send('/rest/v1/animes?on_conflict=user_id,id', {method:'POST',
         headers:{'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=representation'},body:JSON.stringify(rowToAdd)});
@@ -141,7 +141,7 @@ function seasonPreference(userId) {return 'anime-season-jp:'+userId;}
 function readSeasonPreference(userId) {try{return JSON.parse(localStorage.getItem(seasonPreference(userId))) || {};}catch{return {};}}
 function writeSeasonPreference(userId,value){localStorage.setItem(seasonPreference(userId),JSON.stringify(value));}
 async function seasonalJob(kind) {
-  if(importing || pending || loading || editor.open || !session || (typeof sharingReadonly!=='undefined' && sharingReadonly)) return false;
+  if((typeof isAppOwner==='function' && !isAppOwner()) || importing || pending || loading || editor.open || !session || (typeof sharingReadonly!=='undefined' && sharingReadonly)) return false;
   importing=true;
   const buttons=['seasonImport','completeTitles','importButton','add','seasonAuto'];
   buttons.forEach(id=>el(id).disabled=true);
@@ -163,7 +163,7 @@ async function seasonalJob(kind) {
 }
 let seasonAttempt=0,completedAccount=null;
 async function automaticSeason() {
-  if(document.hidden || !session || importing || loading || pending || editor.open || (typeof sharingReadonly!=='undefined' && sharingReadonly)) return;
+  if((typeof isAppOwner==='function' && !isAppOwner()) || document.hidden || !session || importing || loading || pending || editor.open || (typeof sharingReadonly!=='undefined' && sharingReadonly)) return;
   const user=await currentUser();
   const pref=readSeasonPreference(user.id);
   el('seasonAuto').checked=!!pref.enabled;
