@@ -1,20 +1,31 @@
-ANIME ESTANTE 2.5 — organização visual
+ANIME ESTANTE 2.6 — recomendações e catálogo base automático
 
-ATUALIZAR
-1. Extraia AnimeEstante-Online-2.5.zip.
-2. No GitHub KDABJR/Anime-estante, abra Add file > Upload files.
-3. Envie todos os arquivos extraídos na raiz, incluindo o novo layout.css, substituindo os anteriores. Não envie a pasta externa.
-4. Confirme em Commit changes, aguarde a publicação e reabra os aplicativos. O topo mostrará 2.5.
-Não precisa executar SQL ou reinstalar o EXE/APK. Esta versão usa a estrutura 2.4 que você já confirmou funcionando.
+ATIVAR
+1. No SQL Editor do seu Supabase, execute todo o arquivo Atualizar-2.6.sql. É uma atualização da estrutura 2.4 que você já confirmou funcionando. Não precisa executar novamente os arquivos antigos.
+2. Extraia AnimeEstante-Online-2.6.zip. No GitHub KDABJR/Anime-estante, abra Add file > Upload files e envie todos os arquivos extraídos na raiz, sem a pasta externa, substituindo os anteriores. Inclua recommendations.js e layout.css.
+3. Aguarde a publicação e reabra os aplicativos no PC e no Android. O cabeçalho mostrará 2.6. Não é necessário reinstalar o EXE ou APK.
+4. Na segunda conta, volte para Minha coleção, limpe a busca e escolha Todos para conferir a lista completa. Não precisa reimportar o XML.
 
-MUDANÇAS
-Compartilhar estante agora fica somente na conta principal @KDAB. Ela pode abrir Ferramentas da coleção e, depois, Compartilhar estante. Nas outras contas, o painel não aparece. Os compartilhamentos atuais continuam funcionando.
-Ferramentas da coleção reúne importação de temporada, importação do XML e compartilhamento. Fica recolhido para dar mais espaço à coleção. Só aparece para @KDAB e quando está exibindo a própria coleção.
-Layout com mais espaço entre os elementos, busca e ordenação próximas, botões de status em formato de pílulas, capas maiores e cartões com textos mais legíveis. No computador, a grade acomoda até cinco cartões por linha; no celular, duas colunas.
-O nome da conta aparece no cabeçalho. Ao consultar um amigo, o título identifica a coleção exibida. As abas Coleção e Amigos têm maior destaque; os cartões de amigos e a tela de edição também foram reorganizados.
-Busca, paginação, notas com uma casa decimal, média, favoritos e progresso individual permanecem disponíveis.
+CATÁLOGO BASE
+As contas recebem a lista completa de títulos da @KDAB, incluindo capas e nomes secundários, sem entrar manualmente em uma estante compartilhada.
+Todo anime novo que @KDAB adicionar, manualmente ou por importação, aparecerá nas demais contas como Pendente. Com o app aberto e internet, a lista atualiza em aproximadamente oito segundos; se estiver fechado, atualiza ao abrir.
+Animes com progresso pessoal já salvo mantêm seus status, episódios, notas, favoritos e anotações. Nenhum desses dados da @KDAB é copiado para as outras contas.
+Quem ainda não registrou nada em um título começa como Pendente, sem nota, sem favorito e com zero episódios vistos. Cada pessoa pode alterar seu próprio progresso nesses títulos.
+Somente @KDAB continua podendo cadastrar títulos novos ou usar as funções de importação em lote. Salvar o progresso de outra pessoa em um anime do catálogo existente não libera o cadastro de um título diferente.
+Os títulos e capas do catálogo base ficam disponíveis às contas autenticadas. Consultar notas, favoritos e anotações de outras pessoas continua dependendo de amizade aceita ou estante compartilhada.
+
+RECOMENDADOS
+Há uma nova aba Recomendados, com uma indicação por pessoa. São elegíveis animes que pelo menos um amigo aceito ou participante da estante compartilhada tenha marcado como Assistido e que você ainda não tenha marcado como Assistido.
+A lista é ordenada de forma aleatória por conta e a indicação gira a cada virada de hora, usando o relógio do servidor. PC e celular da mesma conta recebem a mesma indicação na mesma hora.
+Havendo pelo menos duas opções elegíveis estáveis, a próxima hora mostra outra. Se só houver uma, ela permanece até aparecer outra opção ou você marcar como Assistido. A quantidade de opções e o horário da próxima troca aparecem na tela.
+São mostrados os nomes de quem já assistiu e a média somente das notas dessas pessoas. Pessoas que deram nota, mas ainda não marcaram Assistido, não entram nessa média. Notas vazias não contam; uma nota zero explícita conta. A média tem uma casa decimal, com vírgula.
+Exemplo: @KDAB e @chiyu já assistiram a este anime. Média de quem avaliou: 8,8/10.
+O botão Já assisti marca o anime como Assistido somente na sua conta e completa o total conhecido de episódios. Mantém sua nota, favoritos e anotações existentes. Se você ainda não tiver registro pessoal, cria apenas seu progresso, sem copiar notas ou favoritos de outra pessoa.
+Depois de marcar, esse anime deixa suas recomendações. Ele continua elegível para outras pessoas que ainda não marcaram Assistido. Se houver outra opção, ela aparece imediatamente.
+O botão Ver na coleção de quem assistiu abre a coleção correspondente em modo só leitura.
+As recomendações usam apenas pessoas cuja coleção você pode consultar. Uma amizade removida deixa de fornecer recomendações, a menos que vocês ainda compartilhem uma estante. Seu progresso já salvo é preservado.
 
 VERIFICAÇÃO
-Testes dos controles passaram: painel de compartilhar visível para @KDAB e oculto para outra conta; ferramentas exclusivas da conta principal; filtros por pessoa, amigos, campos somente leitura, paginação, notas, renovação de sessão e importação de temporada.
-Não foi possível gerar capturas do navegador nesta sessão. Confira a aparência nos seus dispositivos após publicar. Não foram alterados dados reais de sua coleção.
-A integração do GitHub continua sem permissão de escrita; esta atualização ainda precisa ser publicada por você.
+Banco local com contas distintas: estabilidade na mesma hora e troca na próxima; média só de quem assistiu; uma avaliação por pessoa; remoção da recomendação apenas para quem marcou; preservação de notas/favoritos; restrição de títulos novos; catálogo para conta sem grupo; novas adições com metadados públicos e progresso individual; revogação de amizade; repetição do SQL.
+Interface: nova aba, nomes e médias com vírgula, ação Já assisti, sessão limpa ao sair, conta sem estante recebendo o catálogo sem copiar progresso alheio. Mantidos os testes de filtros, paginação, notas, sessões e importação de temporada.
+O SQL e o site ainda precisam ser aplicados por você. Não foram alterados dados reais de sua coleção nesta sessão. A integração do GitHub disponível não tem permissão para publicar automaticamente.

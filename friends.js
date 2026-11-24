@@ -16,9 +16,11 @@ async function loadFriendsState(){
 }
 function selectAppTab(tab){
  friendsTabActive=tab;
- el('collectionTab').hidden=tab!=='collection';el('friendsTab').hidden=tab!=='friends';
+ el('collectionTab').hidden=tab!=='collection';el('friendsTab').hidden=tab!=='friends';el('recommendedTab').hidden=tab!=='recommended';
  el('collectionTabButton').setAttribute('aria-selected',String(tab==='collection'));
  el('friendsTabButton').setAttribute('aria-selected',String(tab==='friends'));
+ el('recommendedTabButton').setAttribute('aria-selected',String(tab==='recommended'));
+ if(tab==='recommended' && typeof refreshRecommendations==='function')refreshRecommendations(true).catch(()=>{});
 }
 function friendsButton(label,action){const button=document.createElement('button');button.type='button';button.textContent=label;button.addEventListener('click',action);return button;}
 function renderFriends(){

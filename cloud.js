@@ -139,7 +139,7 @@ async function saveCloud(change) {
       row.episode > 100000 || row.total > 100000 || (row.total && row.episode > row.total) ||
       (row.rating !== null && (!Number.isFinite(row.rating) || row.rating < 0 || row.rating > 10 || Math.abs(row.rating*10-Math.round(row.rating*10))>1e-8)))
     throw new Error('Revise os episódios, o status e a nota.');
-  if(original?._virtual) row.shared_title_id=original.shared_title_id;
+  if(original?._virtual){row.shared_title_id=original.shared_title_id;if(original._base_user){row.recommended_by_user=original._base_user;row.recommended_from_anime=original._base_anime;}}
   const existing = original && !original._virtual;
   const path = '/rest/v1/animes' + (existing ? '?id=eq.' + id + '&updated_at=eq.' + encodeURIComponent(change.Revision) : '');
   const response = await send(path, {

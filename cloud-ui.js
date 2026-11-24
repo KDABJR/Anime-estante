@@ -28,6 +28,7 @@ el('logout').addEventListener('click', () => {
   if (pending || importing) return;
   keepSession(null);
   items = []; cloudRows = []; lastData = '';
+  if(typeof resetRecommendations==='function')resetRecommendations();
   if(typeof resetFriendsUI==='function')resetFriendsUI();
   if(typeof sharingState!=='undefined'){sharingState={shelf:null,members:[]};sharingTarget='';sharingReadonly=false;el('generatedInvite').value='';el('invitationResult').hidden=true;el('inviteCode').value='';el('sharingInfo').textContent='';el('accountInfo').textContent='';el('username').value='';el('targetUsername').value='';el('incomingInvites').replaceChildren();el('outgoingInvites').replaceChildren();usernameLoadedFor=null;}
   el('grid').replaceChildren();

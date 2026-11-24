@@ -58,7 +58,7 @@ textarea { min-height:85px }
 #friendsInfo,#addFriendError,#removeFriendError { color:var(--muted);overflow-wrap:anywhere; }
 #receivedFriends li,#sentFriends li { margin:10px 0; }#receivedFriends button,#sentFriends button { margin:4px; }
 </style>
-<link rel="stylesheet" href="layout.css?v=7">
+<link rel="stylesheet" href="layout.css?v=8">
 <main>
 <section id="loginPanel" aria-label="Entrar na estante">
 <h1>Anime Estante</h1><p>Acesse sua coleção no PC e no celular.</p>
@@ -70,8 +70,8 @@ textarea { min-height:85px }
 <p id="loginInfo" role="status"></p>
 </form></section>
 <div id="library" hidden>
-<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.5</div><h1>Anime Estante</h1></div><div class="actions"><span id="accountHandle" class="account-handle">Minha conta</span><button id="logout" class="quiet">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
-<div class="app-tabs" role="tablist" aria-label="Navegação principal"><button id="collectionTabButton" role="tab" aria-controls="collectionTab" aria-selected="true">Coleção</button><button id="friendsTabButton" role="tab" aria-controls="friendsTab" aria-selected="false">Amigos<span id="friendTabBadge"></span></button></div>
+<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.6</div><h1>Anime Estante</h1></div><div class="actions"><span id="accountHandle" class="account-handle">Minha conta</span><button id="logout" class="quiet">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
+<div class="app-tabs" role="tablist" aria-label="Navegação principal"><button id="collectionTabButton" role="tab" aria-controls="collectionTab" aria-selected="true">Coleção</button><button id="recommendedTabButton" role="tab" aria-controls="recommendedTab" aria-selected="false">Recomendados</button><button id="friendsTabButton" role="tab" aria-controls="friendsTab" aria-selected="false">Amigos<span id="friendTabBadge"></span></button></div>
 <section id="collectionTab" role="tabpanel" aria-labelledby="collectionTabButton">
 <div class="collection-intro"><div><p class="eyebrow">SUA ESTANTE</p><h2 id="collectionHeading">Minha coleção</h2></div></div>
 <div class="filters search-bar">
@@ -113,6 +113,13 @@ textarea { min-height:85px }
 <nav id="pages" aria-label="Paginação" hidden>
   <button id="previous">Anterior</button><span id="pageNumber"></span><button id="next">Próxima</button>
 </nav></section>
+<section id="recommendedTab" role="tabpanel" aria-labelledby="recommendedTabButton" hidden>
+<div class="collection-intro"><div><p class="eyebrow">DESCOBERTAS DA SUA ESTANTE</p><h2>Uma indicação para você</h2></div></div>
+<p class="friends-description">Animes que seus amigos já assistiram e você ainda não marcou como Assistido. Uma nova indicação a cada hora.</p>
+<p id="recommendationRefresh" class="small"></p><p id="recommendationInfo" role="status"></p>
+<div id="recommendationEmpty" class="recommendation-empty" hidden><h3>Nenhuma indicação por enquanto</h3><p>Novas recomendações aparecem quando seus amigos concluem animes que você ainda não viu.</p></div>
+<article id="recommendationCard" class="recommendation-card" hidden><div id="recommendationArt" class="recommendation-art"></div><div class="recommendation-body"><span class="recommendation-kicker">PARA A SUA PRÓXIMA MARATONA</span><h3 id="recommendationTitle"></h3><p id="recommendationAlternate" class="small"></p><p id="recommendationPeople"></p><p id="recommendationScore" class="recommendation-score"></p><p id="recommendationEpisodes" class="small"></p><div class="actions"><button id="recommendationSeen" class="primary">Já assisti</button><button id="recommendationView">Ver na coleção de quem assistiu</button></div><p class="small">“Já assisti” atualiza só a sua conta. A indicação continua disponível para as outras pessoas que ainda não assistiram.</p></div></article>
+</section>
 <section id="friendsTab" role="tabpanel" aria-labelledby="friendsTabButton" hidden>
 <div class="friends-toolbar"><div><h2>Amigos</h2><p id="friendsCount" class="small"></p></div><button id="addFriendButton" class="primary">+ Adicionar amigo</button></div>
 <p class="friends-description">Notas, favoritos e progresso dos seus amigos, com os dados de cada pessoa separados.</p>
@@ -144,7 +151,7 @@ textarea { min-height:85px }
   <div class="actions"><button id="cancel" type="button">Cancelar</button><button class="primary" id="save">Salvar na nuvem</button></div>
 </form>
 </dialog>
-<script src="cloud.js?v=7"></script>
+<script src="cloud.js?v=8"></script>
 <script>
 const el = id => document.getElementById(id);
 const editor = el('editor'), form = el('editForm');
@@ -331,7 +338,7 @@ el('next').addEventListener('click', () => { page++; render(); window.scrollTo(0
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 setInterval(() => { if (!document.hidden) load(); }, 8000);
 </script>
-<script src="sharing.js?v=7"></script><script src="accounts.js?v=7"></script><script src="friends.js?v=7"></script><script src="cloud-ui.js?v=7"></script><script src="season.js?v=7"></script><script>
+<script src="sharing.js?v=8"></script><script src="accounts.js?v=8"></script><script src="friends.js?v=8"></script><script src="recommendations.js?v=8"></script><script src="cloud-ui.js?v=8"></script><script src="season.js?v=8"></script><script>
 function syncCompletedEpisodes(){if(el('status').value==='Assistido' && Number(el('total').value)>0) el('episode').value=el('total').value;}
 el('status').addEventListener('change',syncCompletedEpisodes);
 el('total').addEventListener('input',syncCompletedEpisodes);
