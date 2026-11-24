@@ -1,43 +1,39 @@
-ANIME ESTANTE 2.7 — Quero assistir, lista de notas, nomes romanizados e importação em lote
+ANIME ESTANTE 2.8 — unificar duplicados e atualizar episódios
 
 ATIVAR
-1. No SQL Editor do Supabase, execute todo o arquivo Atualizar-2.7.sql. É uma atualização da versão 2.6 que já está funcionando. Não precisa repetir os SQL antigos.
-2. Extraia AnimeEstante-Online-2.7.zip. No GitHub KDABJR/Anime-estante, use Add file > Upload files e envie todos os arquivos extraídos na raiz, substituindo os anteriores. Inclua bulk.js, recommendations.js e layout.css. Não envie a pasta externa.
-3. Aguarde o GitHub Pages publicar e reabra os aplicativos. O topo mostrará 2.7. Não precisa reinstalar o EXE ou APK.
+1. No SQL Editor do seu Supabase, execute todo o arquivo Atualizar-2.8.sql. Requer as atualizações anteriores até 2.7 já aplicadas.
+2. Esse SQL já trata o caso confirmado: Spy x Family 2 = SPY×FAMILY Part 2. Mantém Spy x Family 2 como principal, com seu título e sua capa. Só faz a união automática se encontrar exatamente um registro ativo com cada um desses nomes na conta @KDAB. Não une Spy x Family 1 ou 3.
+3. Extraia AnimeEstante-Online-2.8.zip e envie todos os arquivos na raiz do GitHub KDABJR/Anime-estante por Add file > Upload files, substituindo os anteriores. Inclua duplicates.js. Confirme em Commit changes e aguarde a publicação.
+4. Reabra o aplicativo. O topo mostrará 2.8. Não precisa reinstalar o EXE ou APK.
 
-QUERO ASSISTIR
-A recomendação agora tem Quero assistir e Já assisti. Os dois alteram somente a conta que clicou.
-Quero assistir preserva os episódios, a nota, os favoritos e as anotações já salvos. Se ainda não existir progresso, registra Quero assistir com zero episódios, sem nota nem favorito.
-Se outro aparelho já marcou o anime como Assistido, um clique atrasado em Quero assistir não desfaz essa conclusão. A página atualiza a indicação.
-Quero assistir não significa que você já viu: o anime permanece elegível para recomendações enquanto não for marcado como Assistido.
+OUTROS DUPLICADOS
+Na conta @KDAB: Ferramentas da coleção > Unificar duplicados.
+As sugestões indicam possíveis diferenças entre títulos importados e cadastros por pasta. Uma sugestão não confirma que são o mesmo lançamento.
+Selecione o cadastro principal que deseja manter e o duplicado. Confira as capas, os nomes e os status na prévia. Depois clique Unificar e preservar o progresso.
+Part 2, Cour 2 e Season 2 nem sempre significam o mesmo lançamento. Uma numeração de pasta também pode contar uma parte como uma temporada. Confirme cada caso antes de unir.
+O cadastro principal mantém o nome e a capa; a identificação oficial do catálogo da duplicata é associada a ele. A duplicata deixa de aparecer nas coleções.
+Cada pessoa conserva seus próprios registros. Os dados de pessoas diferentes não são misturados. Os dois registros de cada pessoa são reconciliados individualmente:
+- Assistido prevalece quando um dos dois já estiver concluído.
+- Pendente não substitui um status pessoal já definido. Se ambos tiverem status diferentes já definidos, vale o mais recente.
+- Mantém o maior progresso de episódios. Se o total informado conflitar com um progresso maior, o total fica indefinido para não reduzir episódios vistos.
+- Preserva a nota do registro principal daquela pessoa; se estiver vazia, usa a nota da duplicata. Notas diferentes ficam também registradas nas anotações.
+- Favoritos são preservados e anotações diferentes são reunidas.
+Antes da união, o banco guarda uma cópia completa e protegida dos registros envolvidos, inclusive versões anteriores. Essas cópias não podem ser consultadas por contas comuns pelo aplicativo.
+As identificações do catálogo ficam vinculadas ao cadastro principal para impedir que a próxima importação volte a criar aquela duplicata.
 
-LISTA DE NOTAS
-O campo de nota passou a ser uma lista: Sem nota, 10,0, 9,9, 9,8 ... até 0,0. As notas continuam com no máximo uma casa decimal e são exibidas com vírgula.
-Sem nota não entra na média. Zero explícito entra. Cada pessoa mantém a própria avaliação.
+PREVENÇÃO
+Ao encontrar um título oficial como Part 2/Cour 2 e um cadastro manual de numeração ambígua da mesma série, a importação passa a informar o caso para revisão em vez de criar outro registro automaticamente.
+Temporadas diferentes continuam separadas. A ferramenta não remove números indiscriminadamente nem presume que Season 2 é igual a Part 2.
+A importação em lote continua permitindo ecchi, excluindo hentai/adulto explícito pela classificação do catálogo e preservando os cadastros já existentes.
 
-NOMES LEGÍVEIS
-Novos cadastros do catálogo usam títulos em romaji e inglês, quando disponíveis. O nome em caracteres japoneses não é usado como título secundário.
-Para corrigir os existentes, na conta @KDAB abra Ferramentas da coleção > Temporada japonesa e títulos > Corrigir nomes e completar títulos.
-O app consulta o catálogo e só altera quando confirma a correspondência. Exemplo: Attack on Titan / Shingeki no Kyojin. Se os dois nomes legíveis forem iguais, evita uma repetição desnecessária.
-Quando substitui um nome antigo em caracteres japoneses, preserva o texto original nas anotações, junto do que você já escreveu. Não muda status, episódios, nota ou favoritos.
-O título legível do catálogo base também é mostrado para outras contas quando há correspondência confirmada, sem sobrescrever o progresso pessoal delas.
-Se o catálogo não fornecer um nome romanizado ou em inglês, o item será informado nos avisos. O aplicativo não inventa transliterações.
-A correção de uma coleção grande pode levar vários minutos. Mantenha o app aberto.
-
-IMPORTAR MUITOS ANIMES
-Somente @KDAB: Ferramentas da coleção > Importar vários animes do catálogo.
-Escolha 50, 100, 250 ou 500 novos animes e clique Importar novos animes. O catálogo geral é consultado por popularidade, incluindo títulos de diferentes anos e origens.
-Os existentes são ignorados antes de baixar a capa. A identificação usa os IDs do catálogo, títulos alternativos e a indicação simples de primeira temporada, preservando temporadas diferentes.
-Cada novo título entra como Pendente, com capa, quantidade de episódios conhecida e nomes legíveis quando disponíveis. Não preenche uma nota por você.
-Ecchi é permitido. A consulta exclui títulos marcados pelo catálogo como conteúdo adulto explícito ou classificados como Hentai. O resultado também é conferido antes de salvar. O filtro depende da classificação do AniList.
-As outras contas recebem os novos títulos automaticamente como Pendente, preservando qualquer progresso pessoal que já exista.
-O botão Pausar conclui a operação atual e mantém o que já foi salvo. Ao importar novamente, os títulos já cadastrados são ignorados. Lotes grandes podem levar vários minutos e exigem internet com o app aberto.
-Se alguma capa não estiver disponível, o título pode ser salvo sem ela e o aviso será mostrado. As capas existentes não são substituídas.
-O catálogo limita a navegação aos primeiros 5.000 resultados por popularidade. Se houver menos títulos novos disponíveis nessa seleção, o lote pode terminar com menos que a quantidade escolhida.
+TOTAL DE EPISÓDIOS
+@KDAB: Ferramentas da coleção > Temporada japonesa e títulos > Atualizar total de episódios.
+Consulta os IDs ou nomes confirmados no catálogo e atualiza o total conhecido. A atualização vale para os registros ligados àquele título em cada conta.
+Não altera status, nota, favoritos, anotações ou quantidade de episódios já vistos. O aplicativo mantém a apresentação de Todos vistos para o status Assistido, conforme a regra existente.
+Se o catálogo não informar um total ou houver dúvida sobre a temporada/parte, mostra um aviso. Se um progresso já salvo for maior que o novo total, esse registro é preservado para revisão, sem reduzir episódios.
+Uma coleção grande pode levar vários minutos. Mantenha o aplicativo aberto com internet. As atualizações de títulos já concluídas são mantidas se o processo for interrompido.
 
 VERIFICAÇÃO
-Banco local: Quero assistir somente no titular, preservação de episódios/notas/favoritos, botão Já assisti compatível, proteção de Assistido contra clique atrasado, nova função protegida por autenticação, execução repetível.
-Interface: lista com Sem nota e 101 valores de uma casa decimal; Quero assistir no cartão; status preservado em outra conta; notas e títulos exibidos corretamente.
-Importação simulada: novos títulos com capa e Pendente, duplicatas ignoradas antes da capa, ecchi permitido, hentai/adulto ignorado, nomes em romaji/inglês, preservação do original japonês nas anotações. Consulta real ao catálogo testada com filtro ecchi permitido.
-Nenhum lote foi importado na sua coleção real nesta sessão. Os arquivos ainda precisam ser aplicados no Supabase e publicados no GitHub por você; a integração do GitHub disponível não tem permissão de escrita.
-Documentação do catálogo: https://docs.anilist.co/guide/considerations e https://docs.anilist.co/reference/query
+Banco local com contas distintas: união do Spy manual/importado sem alterar as temporadas 1 e 3; status e notas preservados por pessoa; favoritos e anotações reunidos; backup protegido; catálogo sem duplicata; importação repetida bloqueada para a identificação unificada; revisão de concorrência; totais atualizados sem modificar progresso/nota/status; execução repetível sem nova união.
+Interface e importação: detecção conservadora de Part/Cour, uso do cadastro ativo após unir, associação das identificações oficiais e consulta de episódios apenas quando a correspondência é segura. Mantidos os testes de notas, Quero assistir, filtros, recomendações e importação.
+Nenhum dado real foi unido nesta sessão. A união do caso confirmado ocorrerá ao executar o SQL acima no seu Supabase. O site também precisa ser publicado por você no GitHub, pois a integração disponível não tem permissão de escrita.

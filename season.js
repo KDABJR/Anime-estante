@@ -15,7 +15,9 @@ function mediaSources(media) { return ['https://anilist.co/anime/'+media.id,...(
 function firstSeasonKey(value){return nameKey((value||'').replace(/\s+(?:(?:season|temporada)\s*)?1$/i,''));}
 function matchingRow(media, rows) {
  const sources=mediaSources(media);
- const sourceMatch=rows.find(row=>sources.includes((row.seasonal_source||'').replace(/\/$/,'')));
+ const alias=typeof importAliases!=='undefined' && importAliases.find(item=>sources.includes(item.source));
+ if(alias){const linked=rows.find(row=>row.id===alias.target_id && !row.deleted_at);if(linked)return linked;}
+ const sourceMatch=rows.filter(row=>!row.deleted_at).concat(rows.filter(row=>row.deleted_at)).find(row=>sources.includes((row.seasonal_source||'').replace(/\/$/,'')));
  if(sourceMatch)return sourceMatch;
  const names=new Set(mediaNames(media).flatMap(title=>[nameKey(title),firstSeasonKey(title)]));
  return rows.find(row=>{
@@ -110,6 +112,7 @@ async function importMediaList(media,onProgress,label,onlyNew=false){
         if(Object.keys(fields).length) {await patchMetadata(row,fields); updated++;}
         continue;
       }
+      if(typeof manualDuplicateCandidates==='function'){const possible=manualDuplicateCandidates(item,cloudRows);if(possible.length){failures.push(title+' — possível cadastro manual: '+possible.map(row=>row.title).join(', ')+'. Revise antes de importar.');continue;}}
       const id=await seasonalId(user.id,item.id);
       let cover=null;
       try {cover=await catalogCover(id,item.coverImage?.large);}
@@ -161,14 +164,15 @@ function writeSeasonPreference(userId,value){localStorage.setItem(seasonPreferen
 async function seasonalJob(kind) {
   if((typeof isAppOwner==='function' && !isAppOwner()) || importing || pending || loading || editor.open || !session || (typeof sharingReadonly!=='undefined' && sharingReadonly)) return false;
   importing=true;
-  const buttons=['seasonImport','completeTitles','importButton','add','seasonAuto'];
+  const buttons=['seasonImport','completeTitles','importButton','add','seasonAuto','updateEpisodes'];
   buttons.forEach(id=>el(id).disabled=true);
   el('seasonErrors').replaceChildren();
   const progress=text=>el('seasonInfo').textContent=text;
   try {
     await cloudCollection();
+    if(typeof loadImportAliases==='function')await loadImportAliases();
     const fixed=await reconcileCompleted(cloudRows);
-    const result=kind==='season'?await importSeason(progress):kind==='titles'?await completeTitles(progress):{message:fixed+' assistidos atualizados.',failures:[]};
+    const result=kind==='season'?await importSeason(progress):kind==='titles'?await completeTitles(progress):kind==='episodes'?await updateEpisodeTotals(progress):{message:fixed+' assistidos atualizados.',failures:[]};
     progress(result.message+(result.failures.length?' '+result.failures.length+' avisos; confira abaixo.':''));
     for(const failure of result.failures){const li=document.createElement('li');li.textContent=failure;el('seasonErrors').append(li);}
     if(kind==='season' && !result.failures.length) {

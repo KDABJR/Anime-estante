@@ -13,6 +13,7 @@ async function importBulk(target,onProgress){
    if(visited.has(item.id))continue;visited.add(item.id);
    if(!bulkAllowed(item)){blocked++;continue;}
    if(matchingRow(item,cloudRows)){existing++;continue;}
+   if(typeof manualDuplicateCandidates==='function'){const possible=manualDuplicateCandidates(item,cloudRows);if(possible.length){failures.push((primaryTitle(item)||'Anime')+' — possível duplicata de '+possible.map(row=>row.title).join(', ')+'. Revise em Unificar duplicados.');continue;}}
    const result=await importMediaList([item],()=>onProgress(added+'/'+target+' · '+(primaryTitle(item)||'Título sem romanização')),'Catálogo',true);
    added+=result.added;existing+=result.existing;failures.push(...result.failures);
    streak=result.added?0:streak+1;if(streak>=3)throw new Error('Três títulos seguidos não puderam ser importados. '+added+' já foram salvos. Tente novamente mais tarde.');
@@ -26,7 +27,7 @@ async function startBulkImport(){
  importing=true;bulkStopRequested=false;
  const ids=['bulkImport','bulkAmount','seasonImport','completeTitles','importButton','add','seasonAuto'];ids.forEach(id=>el(id).disabled=true);el('bulkStop').hidden=false;el('bulkWarnings').replaceChildren();
  try{
-  await cloudCollection();const result=await importBulk(Number(el('bulkAmount').value),text=>el('bulkInfo').textContent=text);
+  await cloudCollection();if(typeof loadImportAliases==='function')await loadImportAliases();const result=await importBulk(Number(el('bulkAmount').value),text=>el('bulkInfo').textContent=text);
   el('bulkInfo').textContent=result.message+(result.failures.length?' Há '+result.failures.length+' aviso(s) abaixo.':'');
   for(const failure of result.failures){const li=document.createElement('li');li.textContent=failure;el('bulkWarnings').append(li);}
  }catch(error){el('bulkInfo').textContent=error.message+' Os títulos já salvos não serão duplicados ao repetir.';}

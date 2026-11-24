@@ -58,7 +58,7 @@ textarea { min-height:85px }
 #friendsInfo,#addFriendError,#removeFriendError { color:var(--muted);overflow-wrap:anywhere; }
 #receivedFriends li,#sentFriends li { margin:10px 0; }#receivedFriends button,#sentFriends button { margin:4px; }
 </style>
-<link rel="stylesheet" href="layout.css?v=9">
+<link rel="stylesheet" href="layout.css?v=10">
 <main>
 <section id="loginPanel" aria-label="Entrar na estante">
 <h1>Anime Estante</h1><p>Acesse sua coleção no PC e no celular.</p>
@@ -70,7 +70,7 @@ textarea { min-height:85px }
 <p id="loginInfo" role="status"></p>
 </form></section>
 <div id="library" hidden>
-<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.7</div><h1>Anime Estante</h1></div><div class="actions"><span id="accountHandle" class="account-handle">Minha conta</span><button id="logout" class="quiet">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
+<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.8</div><h1>Anime Estante</h1></div><div class="actions"><span id="accountHandle" class="account-handle">Minha conta</span><button id="logout" class="quiet">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
 <div class="app-tabs" role="tablist" aria-label="Navegação principal"><button id="collectionTabButton" role="tab" aria-controls="collectionTab" aria-selected="true">Coleção</button><button id="recommendedTabButton" role="tab" aria-controls="recommendedTab" aria-selected="false">Recomendados</button><button id="friendsTabButton" role="tab" aria-controls="friendsTab" aria-selected="false">Amigos<span id="friendTabBadge"></span></button></div>
 <section id="collectionTab" role="tabpanel" aria-labelledby="collectionTabButton">
 <div class="collection-intro"><div><p class="eyebrow">SUA ESTANTE</p><h2 id="collectionHeading">Minha coleção</h2></div></div>
@@ -90,9 +90,9 @@ textarea { min-height:85px }
 </select></div>
 
 
-<details id="ownerTools" class="tools-panel" hidden><summary>Ferramentas da coleção</summary><div class="tools-grid"><details id="bulkPanel" class="migration"><summary>Importar vários animes do catálogo</summary><p>Adicione novos títulos com capas, como Pendente. Os já cadastrados serão ignorados. Ecchi é permitido; hentai e conteúdo adulto explícito são excluídos pela classificação do catálogo.</p><label>Quantidade de novos animes<select id="bulkAmount"><option value="50">50 animes</option><option value="100" selected>100 animes</option><option value="250">250 animes</option><option value="500">500 animes</option></select></label><div class="actions"><button id="bulkImport">Importar novos animes</button><button id="bulkStop" hidden>Pausar</button></div><p class="small">Mantenha o app aberto. Lotes grandes podem levar vários minutos. A pausa mantém os títulos já salvos.</p><p id="bulkInfo" role="status"></p><ul id="bulkWarnings" class="small" style="max-height:180px;overflow:auto"></ul></details><details id="seasonPanel" class="migration"><summary>Temporada japonesa e títulos</summary>
+<details id="ownerTools" class="tools-panel" hidden><summary>Ferramentas da coleção</summary><div class="tools-grid"><details id="duplicatesPanel" class="migration"><summary>Unificar duplicados</summary><p>Revise os títulos e as capas antes de confirmar. Partes e temporadas diferentes devem continuar separadas. O cadastro principal mantém seu nome e sua capa. Cada conta conserva os próprios dados, com cópia protegida antes da união.</p><ul id="duplicateSuggestions" class="small" style="max-height:180px;overflow:auto"></ul><label>Cadastro principal<select id="duplicateKeep"><option value="">Selecione um anime</option></select></label><label>Duplicado<select id="duplicateDrop"><option value="">Selecione um anime</option></select></label><div id="duplicatePreview" class="duplicate-preview"></div><button id="duplicateConfirm" disabled>Unificar e preservar o progresso</button><p id="duplicateInfo" role="status"></p></details><details id="bulkPanel" class="migration"><summary>Importar vários animes do catálogo</summary><p>Adicione novos títulos com capas, como Pendente. Os já cadastrados serão ignorados. Ecchi é permitido; hentai e conteúdo adulto explícito são excluídos pela classificação do catálogo.</p><label>Quantidade de novos animes<select id="bulkAmount"><option value="50">50 animes</option><option value="100" selected>100 animes</option><option value="250">250 animes</option><option value="500">500 animes</option></select></label><div class="actions"><button id="bulkImport">Importar novos animes</button><button id="bulkStop" hidden>Pausar</button></div><p class="small">Mantenha o app aberto. Lotes grandes podem levar vários minutos. A pausa mantém os títulos já salvos.</p><p id="bulkInfo" role="status"></p><ul id="bulkWarnings" class="small" style="max-height:180px;overflow:auto"></ul></details><details id="seasonPanel" class="migration"><summary>Temporada japonesa e títulos</summary>
 <p id="seasonLabel">Temporada atual no Japão</p>
-<div class="actions" style="flex-wrap:wrap;justify-content:start"><button id="seasonImport">Importar temporada atual</button><button id="completeTitles">Corrigir nomes e completar títulos</button></div>
+<div class="actions" style="flex-wrap:wrap;justify-content:start"><button id="seasonImport">Importar temporada atual</button><button id="completeTitles">Corrigir nomes e completar títulos</button><button id="updateEpisodes">Atualizar total de episódios</button></div>
 <label class="inline" style="margin-top:12px"><input id="seasonAuto" type="checkbox"> Importar automaticamente neste aparelho</label>
 <p>Adiciona como Pendente, com capa e dois títulos quando disponíveis. Preserva seus cadastros. A verificação automática ocorre diariamente com o app aberto e também quando a temporada muda. Ative em cada aparelho desejado.</p>
 <p class="small">Catálogo: AniList · origem Japão · sem conteúdo adulto explícito. Pode incluir filmes, especiais e estreias previstas.</p>
@@ -151,7 +151,7 @@ textarea { min-height:85px }
   <div class="actions"><button id="cancel" type="button">Cancelar</button><button class="primary" id="save">Salvar na nuvem</button></div>
 </form>
 </dialog>
-<script src="cloud.js?v=9"></script>
+<script src="cloud.js?v=10"></script>
 <script>
 const el = id => document.getElementById(id);
 const editor = el('editor'), form = el('editForm');
@@ -339,7 +339,7 @@ el('next').addEventListener('click', () => { page++; render(); window.scrollTo(0
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 setInterval(() => { if (!document.hidden) load(); }, 8000);
 </script>
-<script src="sharing.js?v=9"></script><script src="accounts.js?v=9"></script><script src="friends.js?v=9"></script><script src="recommendations.js?v=9"></script><script src="cloud-ui.js?v=9"></script><script src="season.js?v=9"></script><script src="bulk.js?v=9"></script><script>
+<script src="sharing.js?v=10"></script><script src="accounts.js?v=10"></script><script src="friends.js?v=10"></script><script src="recommendations.js?v=10"></script><script src="cloud-ui.js?v=10"></script><script src="season.js?v=10"></script><script src="bulk.js?v=10"></script><script src="duplicates.js?v=10"></script><script>
 function syncCompletedEpisodes(){if(el('status').value==='Assistido' && Number(el('total').value)>0) el('episode').value=el('total').value;}
 el('status').addEventListener('change',syncCompletedEpisodes);
 el('total').addEventListener('input',syncCompletedEpisodes);
