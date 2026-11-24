@@ -83,7 +83,7 @@ async function cloudCollection() {
   const visibleRows = typeof sharedCollectionRows === "function" ? await sharedCollectionRows(rows) : rows;
   cloudRows = visibleRows;
   return { statuses: STATUSES, items: visibleRows.filter(row => !row.deleted_at).map(row => ({
-    Id: row.id, Revision: row.updated_at, Title: row.title, AlternateTitle: row.alternate_title || '',
+    Id: row.id, Revision: row.updated_at, Title: row._display_title || row.title, AlternateTitle: row._display_alt !== undefined ? row._display_alt || '' : row.alternate_title || '',
     Status: row.status, Notes: row.notes, Episode: row.episode, Total: row.total,
     Rating: row.rating, Favorite: row.favorite, HasCover: !!row.cover_path, AddedAt: row.added_at
   })) };
@@ -134,6 +134,7 @@ async function saveCloud(change) {
     status: change.Status, episode: change.Status === 'Assistido' && change.Total > 0 ? change.Total : change.Episode, total: change.Total, rating: change.Rating,
     favorite: change.Favorite, notes: change.Notes, cover_path: cover
   };
+  if(original && typeof isAppOwner==='function' && !isAppOwner()){row.title=original.title;row.alternate_title=original.alternate_title??null;}
   if (!STATUSES.includes(row.status) || !row.title || !Number.isInteger(row.episode) ||
       !Number.isInteger(row.total) || row.episode < 0 || row.total < 0 ||
       row.episode > 100000 || row.total > 100000 || (row.total && row.episode > row.total) ||

@@ -16,6 +16,7 @@ async function refreshRecommendations(force=false){
   const rec=data.recommendation;if(!rec)return;
   el('recommendationTitle').textContent=rec.title;el('recommendationAlternate').textContent=rec.alternate_title||'';
   el('recommendationAlternate').hidden=!rec.alternate_title;
+  el('recommendationWant').textContent=rec.own_status==='Quero assistir'?'Na sua lista de Quero assistir':'Quero assistir';el('recommendationWant').disabled=rec.own_status==='Quero assistir';
   const names=watcherNames(rec.watchers);
   el('recommendationPeople').textContent=names+(rec.watcher_count===1?' já assistiu a este anime.':' já assistiram a este anime.');
   el('recommendationScore').textContent=rec.rating_count?'Média de quem avaliou: '+formatRating(rec.average)+'/10 · '+rec.rating_count+' avaliação(ões)':'Essas pessoas ainda não deram uma nota.';
@@ -33,17 +34,17 @@ async function refreshRecommendations(force=false){
    el('recommendationInfo').textContent=/Could not find.*anime_recommendation|function.*anime_recommendation.*does not exist/i.test(error.message)?'As recomendações ainda não foram ativadas nesta versão.':error.message;}
  }finally{if(ticket===recommendationTicket)recommendationBusy=false;}
 }
-async function markRecommendationSeen(){
+async function markRecommendationSeen(status='Assistido'){
  const rec=recommendationData?.recommendation;
  if(!rec || !session || importing || pending || loading || recommendationBusy)return;
- let failure=null;importing=true;el('recommendationSeen').disabled=true;el('recommendationInfo').textContent='Atualizando apenas o seu progresso…';
+ let failure=null;importing=true;el('recommendationSeen').disabled=el('recommendationWant').disabled=true;el('recommendationInfo').textContent='Atualizando apenas o seu progresso…';
  try{
-  await shelfRPC('anime_recommendation_seen',{p_source_user:rec.source_user,p_source_anime:rec.source_anime});
+  const result=await shelfRPC('anime_recommendation_status',{p_source_user:rec.source_user,p_source_anime:rec.source_anime,p_status:status});if(result.kept_finished)failure='Esse anime já foi marcado como Assistido em sua conta. O status foi preservado.';
   sharingTarget='';sharingReadonly=false;lastData='';page=0;
   el('filter').value='';el('search').value='';el('onlyFavorites').checked=false;
   el('recommendationInfo').textContent='Marcado como Assistido na sua conta.';
  }catch(error){failure=error.message;el('recommendationInfo').textContent=error.message;}
- finally{importing=false;el('recommendationSeen').disabled=false;await load();await refreshRecommendations(true);el('recommendationInfo').textContent=failure||'Marcado como Assistido apenas na sua conta.';}
+ finally{importing=false;el('recommendationSeen').disabled=el('recommendationWant').disabled=false;await load();await refreshRecommendations(true);el('recommendationInfo').textContent=failure||(status==='Quero assistir'?'Adicionado a Quero assistir apenas na sua conta.':'Marcado como Assistido apenas na sua conta.');}
 }
 function viewRecommendation(){
  const rec=recommendationData?.recommendation;if(!rec)return;
@@ -52,7 +53,9 @@ function viewRecommendation(){
  selectAppTab('collection');applySharingAccess();load();
 }
 el('recommendedTabButton').addEventListener('click',()=>selectAppTab('recommended'));
-el('recommendationSeen').addEventListener('click',markRecommendationSeen);
+el('recommendationSeen').addEventListener('click',()=>markRecommendationSeen());
 el('recommendationView').addEventListener('click',viewRecommendation);
 setInterval(()=>{refreshRecommendations().catch(()=>{});},15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshRecommendations().catch(()=>{});});
+
+el('recommendationWant').addEventListener('click',()=>markRecommendationSeen('Quero assistir'));

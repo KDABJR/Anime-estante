@@ -13,7 +13,13 @@ function baseRowMatches(row,title){
 }
 function virtualSharedRows(rows,catalog,userId) {
  const linked=new Set(rows.map(row=>row.shared_title_id).filter(Boolean));
- const result=[...rows];
+ const readable=value=>!!value && !/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(value);
+ const result=rows.map(row=>{
+  const base=catalog.find(t=>t.base_source_anime && t.base_source_user!==row.user_id && baseRowMatches(row,t));
+  if(!base)return row;
+  return {...row,_display_title:!readable(row.title)&&readable(base.title)?base.title:row.title,
+   _display_alt:readable(row.alternate_title)?row.alternate_title:readable(base.alternate_title)?base.alternate_title:null};
+ });
  for(const title of catalog) if(!linked.has(title.id) && (!title.base_source_anime || !rows.some(row=>baseRowMatches(row,title)))) result.push({id:title.id,user_id:userId,shared_title_id:title.base_source_anime ? title.shared_title_id : title.id,_base_user:title.base_source_user,_base_anime:title.base_source_anime,
   title:title.title,alternate_title:title.alternate_title,total:title.total,cover_path:title.cover_path,
   seasonal_source:title.seasonal_source,added_at:title.added_at,updated_at:'shared:'+title.id,

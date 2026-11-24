@@ -12,14 +12,22 @@ function seasonNow(date = new Date()) {
 function nameKey(value) { return (value || '').normalize('NFKC').toLocaleLowerCase().replace(/[\p{P}\p{Z}\s]/gu,''); }
 function mediaNames(media) { return [...new Set([media.title?.romaji,media.title?.english,media.title?.native,...(media.synonyms||[])].filter(Boolean))]; }
 function mediaSources(media) { return ['https://anilist.co/anime/'+media.id,...(media.idMal?['https://myanimelist.net/anime/'+media.idMal]:[])]; }
+function firstSeasonKey(value){return nameKey((value||'').replace(/\s+(?:(?:season|temporada)\s*)?1$/i,''));}
 function matchingRow(media, rows) {
-  const names = new Set(mediaNames(media).map(nameKey));
-  const sources = mediaSources(media);
-  return rows.find(row => sources.includes((row.seasonal_source||'').replace(/\/$/,'')) ||
-    [row.title,row.alternate_title].filter(Boolean).some(title=>names.has(nameKey(title))));
+ const sources=mediaSources(media);
+ const sourceMatch=rows.find(row=>sources.includes((row.seasonal_source||'').replace(/\/$/,'')));
+ if(sourceMatch)return sourceMatch;
+ const names=new Set(mediaNames(media).flatMap(title=>[nameKey(title),firstSeasonKey(title)]));
+ return rows.find(row=>{
+  const source=(row.seasonal_source||'').replace(/\/$/,'');
+  if(source && sources.some(item=>item.slice(0,item.lastIndexOf('/')+1)===source.slice(0,source.lastIndexOf('/')+1)))return false;
+  return [row.title,row.alternate_title].filter(Boolean).some(title=>names.has(nameKey(title))||names.has(firstSeasonKey(title)));
+ });
 }
+function readableTitle(value){return !!value && !/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(value);}
+function primaryTitle(media){return [media.title?.romaji,media.title?.english].find(readableTitle)||null;}
 function secondaryTitle(media, primary) {
-  return [media.title?.english,media.title?.romaji,media.title?.native].find(title=>title && nameKey(title)!==nameKey(primary)) || null;
+  return [media.title?.english,media.title?.romaji].find(title=>readableTitle(title) && nameKey(title)!==nameKey(primary)) || null;
 }
 async function catalog(query, variables) {
   await pause(Math.max(0,2200-(Date.now()-catalogRequestAt)));
@@ -77,19 +85,22 @@ async function reconcileCompleted(rows) {
   return count;
 }
 async function importSeason(onProgress) {
-  const season=seasonNow();
-  onProgress('Consultando '+season.label+'…');
-  const media=await seasonalMedia(season);
+ const season=seasonNow();onProgress('Consultando '+season.label+'…');
+ return importMediaList(await seasonalMedia(season),onProgress,season.label);
+}
+async function importMediaList(media,onProgress,label,onlyNew=false){
   const user=await currentUser();
   let added=0,existing=0,updated=0; const failures=[];
   for(let index=0;index<media.length;index++) {
-    const item=media[index], title=item.title.romaji || item.title.english || item.title.native;
+    const item=media[index], title=primaryTitle(item);
     onProgress((index+1)+'/'+media.length+' · '+title);
     try {
+      if(!title)throw new Error('Título romanizado ou em inglês indisponível.');
+      if(item.isAdult===true || (item.genres||[]).some(g=>g.toLowerCase()==='hentai'))continue;
       const row=matchingRow(item,cloudRows);
       if(row) {
         existing++;
-        if(row.deleted_at) continue;
+        if(row.deleted_at || onlyNew) continue;
         const fields={};
         if(!row.alternate_title?.trim()) {const alt=secondaryTitle(item,row.title); if(alt) fields.alternate_title=alt;}
         if(!row.cover_path) {
@@ -113,10 +124,10 @@ async function importSeason(onProgress) {
       if(inserted.length) added++; else existing++;
     } catch(error){failures.push(title+' — '+error.message);}
   }
-  return {message:season.label+': '+added+' adicionados como Pendente · '+existing+' já cadastrados · '+updated+' complementados.',failures};
+  return {added,existing,updated,message:label+': '+added+' adicionados como Pendente · '+existing+' já cadastrados · '+updated+' complementados.',failures};
 }
 async function completeTitles(onProgress) {
-  const rows=cloudRows.filter(row=>!row.deleted_at && !row.alternate_title?.trim());
+  const rows=cloudRows.filter(row=>!row.deleted_at && (!row.alternate_title?.trim() || !readableTitle(row.title) || (row.alternate_title && !readableTitle(row.alternate_title))));
   let count=0; const failures=[];
   for(let index=0;index<rows.length;index++) {
     const row=rows[index]; onProgress((index+1)+'/'+rows.length+' · '+row.title);
@@ -130,12 +141,19 @@ async function completeTitles(onProgress) {
       } else candidates=(await catalog(nameQuery,{search:row.title})).media;
       const matches=candidates.filter(item=>matchingRow(item,[row]));
       if(matches.length!==1) {failures.push(row.title+' — correspondência não confirmada.');continue;}
-      const alternate=secondaryTitle(matches[0],row.title);
-      if(!alternate) {failures.push(row.title+' — sem título secundário disponível.');continue;}
-      await patchMetadata(row,{alternate_title:alternate}); count++;
+      const media=matches[0], primary=readableTitle(row.title)?row.title:primaryTitle(media);
+      if(!primary){failures.push(row.title+' — título romanizado não encontrado.');continue;}
+      const alternate=secondaryTitle(media,primary), fields={};
+      if(primary!==row.title)fields.title=primary;
+      if(alternate || (row.alternate_title && !readableTitle(row.alternate_title)))fields.alternate_title=alternate;
+      const originals=[row.title,row.alternate_title].filter(t=>t && !readableTitle(t));
+      let notes=row.notes||'';for(const original of originals)if(!notes.includes(original))notes+=(notes?'\n':'')+'Título original: '+original;
+      if(notes!==(row.notes||''))fields.notes=notes;
+      if(!Object.keys(fields).length){failures.push(row.title+' — sem outro título legível disponível.');continue;}
+      await patchMetadata(row,fields);count++;
     } catch(error){failures.push(row.title+' — '+error.message); if(/limite de consultas|indisponível/.test(error.message)) break;}
   }
-  return {message:count+' títulos secundários preenchidos.',failures};
+  return {message:count+' nomes corrigidos ou completados.',failures};
 }
 function seasonPreference(userId) {return 'anime-season-jp:'+userId;}
 function readSeasonPreference(userId) {try{return JSON.parse(localStorage.getItem(seasonPreference(userId))) || {};}catch{return {};}}

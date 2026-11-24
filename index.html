@@ -58,7 +58,7 @@ textarea { min-height:85px }
 #friendsInfo,#addFriendError,#removeFriendError { color:var(--muted);overflow-wrap:anywhere; }
 #receivedFriends li,#sentFriends li { margin:10px 0; }#receivedFriends button,#sentFriends button { margin:4px; }
 </style>
-<link rel="stylesheet" href="layout.css?v=8">
+<link rel="stylesheet" href="layout.css?v=9">
 <main>
 <section id="loginPanel" aria-label="Entrar na estante">
 <h1>Anime Estante</h1><p>Acesse sua coleção no PC e no celular.</p>
@@ -70,7 +70,7 @@ textarea { min-height:85px }
 <p id="loginInfo" role="status"></p>
 </form></section>
 <div id="library" hidden>
-<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.6</div><h1>Anime Estante</h1></div><div class="actions"><span id="accountHandle" class="account-handle">Minha conta</span><button id="logout" class="quiet">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
+<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.7</div><h1>Anime Estante</h1></div><div class="actions"><span id="accountHandle" class="account-handle">Minha conta</span><button id="logout" class="quiet">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
 <div class="app-tabs" role="tablist" aria-label="Navegação principal"><button id="collectionTabButton" role="tab" aria-controls="collectionTab" aria-selected="true">Coleção</button><button id="recommendedTabButton" role="tab" aria-controls="recommendedTab" aria-selected="false">Recomendados</button><button id="friendsTabButton" role="tab" aria-controls="friendsTab" aria-selected="false">Amigos<span id="friendTabBadge"></span></button></div>
 <section id="collectionTab" role="tabpanel" aria-labelledby="collectionTabButton">
 <div class="collection-intro"><div><p class="eyebrow">SUA ESTANTE</p><h2 id="collectionHeading">Minha coleção</h2></div></div>
@@ -90,9 +90,9 @@ textarea { min-height:85px }
 </select></div>
 
 
-<details id="ownerTools" class="tools-panel" hidden><summary>Ferramentas da coleção</summary><div class="tools-grid"><details id="seasonPanel" class="migration"><summary>Temporada japonesa e títulos</summary>
+<details id="ownerTools" class="tools-panel" hidden><summary>Ferramentas da coleção</summary><div class="tools-grid"><details id="bulkPanel" class="migration"><summary>Importar vários animes do catálogo</summary><p>Adicione novos títulos com capas, como Pendente. Os já cadastrados serão ignorados. Ecchi é permitido; hentai e conteúdo adulto explícito são excluídos pela classificação do catálogo.</p><label>Quantidade de novos animes<select id="bulkAmount"><option value="50">50 animes</option><option value="100" selected>100 animes</option><option value="250">250 animes</option><option value="500">500 animes</option></select></label><div class="actions"><button id="bulkImport">Importar novos animes</button><button id="bulkStop" hidden>Pausar</button></div><p class="small">Mantenha o app aberto. Lotes grandes podem levar vários minutos. A pausa mantém os títulos já salvos.</p><p id="bulkInfo" role="status"></p><ul id="bulkWarnings" class="small" style="max-height:180px;overflow:auto"></ul></details><details id="seasonPanel" class="migration"><summary>Temporada japonesa e títulos</summary>
 <p id="seasonLabel">Temporada atual no Japão</p>
-<div class="actions" style="flex-wrap:wrap;justify-content:start"><button id="seasonImport">Importar temporada atual</button><button id="completeTitles">Completar títulos secundários</button></div>
+<div class="actions" style="flex-wrap:wrap;justify-content:start"><button id="seasonImport">Importar temporada atual</button><button id="completeTitles">Corrigir nomes e completar títulos</button></div>
 <label class="inline" style="margin-top:12px"><input id="seasonAuto" type="checkbox"> Importar automaticamente neste aparelho</label>
 <p>Adiciona como Pendente, com capa e dois títulos quando disponíveis. Preserva seus cadastros. A verificação automática ocorre diariamente com o app aberto e também quando a temporada muda. Ative em cada aparelho desejado.</p>
 <p class="small">Catálogo: AniList · origem Japão · sem conteúdo adulto explícito. Pode incluir filmes, especiais e estreias previstas.</p>
@@ -118,7 +118,7 @@ textarea { min-height:85px }
 <p class="friends-description">Animes que seus amigos já assistiram e você ainda não marcou como Assistido. Uma nova indicação a cada hora.</p>
 <p id="recommendationRefresh" class="small"></p><p id="recommendationInfo" role="status"></p>
 <div id="recommendationEmpty" class="recommendation-empty" hidden><h3>Nenhuma indicação por enquanto</h3><p>Novas recomendações aparecem quando seus amigos concluem animes que você ainda não viu.</p></div>
-<article id="recommendationCard" class="recommendation-card" hidden><div id="recommendationArt" class="recommendation-art"></div><div class="recommendation-body"><span class="recommendation-kicker">PARA A SUA PRÓXIMA MARATONA</span><h3 id="recommendationTitle"></h3><p id="recommendationAlternate" class="small"></p><p id="recommendationPeople"></p><p id="recommendationScore" class="recommendation-score"></p><p id="recommendationEpisodes" class="small"></p><div class="actions"><button id="recommendationSeen" class="primary">Já assisti</button><button id="recommendationView">Ver na coleção de quem assistiu</button></div><p class="small">“Já assisti” atualiza só a sua conta. A indicação continua disponível para as outras pessoas que ainda não assistiram.</p></div></article>
+<article id="recommendationCard" class="recommendation-card" hidden><div id="recommendationArt" class="recommendation-art"></div><div class="recommendation-body"><span class="recommendation-kicker">PARA A SUA PRÓXIMA MARATONA</span><h3 id="recommendationTitle"></h3><p id="recommendationAlternate" class="small"></p><p id="recommendationPeople"></p><p id="recommendationScore" class="recommendation-score"></p><p id="recommendationEpisodes" class="small"></p><div class="actions"><button id="recommendationWant">Quero assistir</button><button id="recommendationSeen" class="primary">Já assisti</button><button id="recommendationView">Ver na coleção de quem assistiu</button></div><p class="small">Esses botões atualizam só a sua conta. A indicação continua disponível para as outras pessoas que ainda não assistiram.</p></div></article>
 </section>
 <section id="friendsTab" role="tabpanel" aria-labelledby="friendsTabButton" hidden>
 <div class="friends-toolbar"><div><h2>Amigos</h2><p id="friendsCount" class="small"></p></div><button id="addFriendButton" class="primary">+ Adicionar amigo</button></div>
@@ -139,7 +139,7 @@ textarea { min-height:85px }
   <h2 id="editorTitle">Editar anime</h2>
   <label>Título principal <input id="title" required maxlength="1000"></label>
   <label>Título secundário <input id="alternate" maxlength="1000"></label>
-  <div class="row"><label>Status <select id="status" required></select></label><label>Nota (0 a 10)<input id="rating" type="text" inputmode="decimal" maxlength="4" placeholder="Sem nota" pattern="(?:10(?:[.,]0)?|[0-9](?:[.,][0-9])?)"></label></div>
+  <div class="row"><label>Status <select id="status" required></select></label><label>Nota (0 a 10)<select id="rating" aria-label="Nota de zero a dez"></select></label></div>
   <div class="row"><label>Último episódio visto <input id="episode" type="number" min="0" max="100000" value="0"></label>
   <label>Total de episódios (0 = indefinido) <input id="total" type="number" min="0" max="100000" value="0"></label></div>
   <label class="inline"><input id="favorite" type="checkbox"> Favorito</label>
@@ -151,7 +151,7 @@ textarea { min-height:85px }
   <div class="actions"><button id="cancel" type="button">Cancelar</button><button class="primary" id="save">Salvar na nuvem</button></div>
 </form>
 </dialog>
-<script src="cloud.js?v=8"></script>
+<script src="cloud.js?v=9"></script>
 <script>
 const el = id => document.getElementById(id);
 const editor = el('editor'), form = el('editForm');
@@ -279,7 +279,7 @@ function edit(item) {
   el('status').value = item?.Status || 'Pendente';
   el('episode').value = item?.Status === 'Assistido' && item.Total ? item.Total : item?.Episode || 0;
   el('total').value = item?.Total || 0;
-  el('rating').value = item?.Rating != null ? String(item.Rating).replace('.',',') : '';
+  el('rating').value = item?.Rating != null ? formatRating(item.Rating) : '';
   el('favorite').checked = item?.Favorite || false;
   el('notes').value = item?.Notes || '';
   el('removeWrap').style.display = item?.HasCover ? 'flex' : 'none';
@@ -327,6 +327,7 @@ form.addEventListener('submit', async event => {
   }
 });
 
+el('rating').add(new Option('Sem nota',''));for(let tenth=100;tenth>=0;tenth--){const score=(tenth/10).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});el('rating').add(new Option(score,score));}
 el('onlyFavorites').addEventListener('change',()=>{page=0;render();});
 el('add').addEventListener('click', () => edit(null));
 el('cancel').addEventListener('click', () => {if(pending||importing)return;const opened=document.querySelector('dialog[open]');(opened||editor).close();});
@@ -338,7 +339,7 @@ el('next').addEventListener('click', () => { page++; render(); window.scrollTo(0
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 setInterval(() => { if (!document.hidden) load(); }, 8000);
 </script>
-<script src="sharing.js?v=8"></script><script src="accounts.js?v=8"></script><script src="friends.js?v=8"></script><script src="recommendations.js?v=8"></script><script src="cloud-ui.js?v=8"></script><script src="season.js?v=8"></script><script>
+<script src="sharing.js?v=9"></script><script src="accounts.js?v=9"></script><script src="friends.js?v=9"></script><script src="recommendations.js?v=9"></script><script src="cloud-ui.js?v=9"></script><script src="season.js?v=9"></script><script src="bulk.js?v=9"></script><script>
 function syncCompletedEpisodes(){if(el('status').value==='Assistido' && Number(el('total').value)>0) el('episode').value=el('total').value;}
 el('status').addEventListener('change',syncCompletedEpisodes);
 el('total').addEventListener('input',syncCompletedEpisodes);
