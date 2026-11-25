@@ -1,16 +1,32 @@
-ANIME ESTANTE 2.9.1 — correção do carregamento da coleção
-
-A atualização 2.9 removeu um painel, mas deixou uma leitura do campo memberLabel que pertencia a ele. Isso causava Cannot read properties of null (reading 'value') e interrompia a exibição da coleção. A leitura antiga foi removida e as referências aos campos do HTML foram verificadas.
+ANIME ESTANTE 2.9.2 — Ignorar, remover sugestão unificada e respeitar numeração
 
 ATUALIZAR
-1. Extraia AnimeEstante-Online-2.9.1.zip.
-2. No repositório KDABJR/Anime-estante, use Add file > Upload files e envie todos os arquivos extraídos na raiz, substituindo os anteriores. Não envie a pasta externa.
-3. Confirme em Commit changes e aguarde a publicação do GitHub Pages.
-4. No PC, atualize com Ctrl+Shift+R. No celular, feche completamente o aplicativo e reabra. Confira 2.9.1 no cabeçalho.
+1. Extraia AnimeEstante-Online-2.9.2.zip.
+2. No GitHub KDABJR/Anime-estante, abra Add file > Upload files e envie todos os arquivos extraídos na raiz, substituindo os anteriores. Não envie a pasta externa.
+3. Confirme em Commit changes, aguarde a publicação e reabra o aplicativo. No PC, use Ctrl+Shift+R se ainda aparecer a versão antiga. O cabeçalho mostrará 2.9.2.
+Esta correção não exige SQL novo. Mantém a estrutura 2.9 já instalada e as sugestões ignoradas já salvas.
 
-Esta correção não exige SQL novo. Se você já executou Atualizar-2.9.sql, não precisa repeti-lo. Não reinstale o APK/EXE e não importe novamente sua coleção.
+IGNORAR SUGESTÃO
+Foi reproduzido um problema no código publicado: o botão descartava silenciosamente o clique quando a atualização automática da coleção estava em andamento.
+O clique agora pode ser salvo durante essa leitura automática. O botão mostra Salvando… e fica temporariamente desabilitado.
+A sugestão só sai da lista depois que o servidor confirma a gravação. Se houver erro, ele aparece perto do botão, e o item permanece para tentar novamente.
+Se outra operação de escrita estiver em andamento, a tela avisa que é preciso aguardar, em vez de ignorar o clique sem resposta.
+A decisão permanece salva no banco e pode ser desfeita em Sugestões ignoradas > Voltar a analisar. Ignorar uma sugestão não muda o status dos animes.
 
-Os recursos da versão 2.9 são mantidos: Duplicados com varredura e sugestões ignoradas, gravação de avaliações sem recarregar a coleção inteira e sem baixar novamente as mesmas capas, ferramentas antigas removidas.
+UNIFICAR
+Depois que o servidor confirma a unificação, a sugestão e as outras sugestões que envolviam o registro removido saem imediatamente da lista. O app não espera uma releitura completa da coleção para mostrar o resultado.
+Os detalhes do cadastro principal são atualizados com uma consulta pontual. Uma atualização antiga em andamento não recoloca a duplicata na lista.
+Se a união falhar, a sugestão permanece e a mensagem explica o erro. Se a união terminar, mas a leitura dos detalhes falhar, a tela informa que a união foi concluída e que basta reabrir para atualizar os detalhes.
+As regras de preservação por conta e as cópias de segurança da versão anterior são mantidas.
 
-Verificação: teste reproduziu exatamente o erro da imagem antes da correção; depois dela, os testes com campos ausentes retornando null passaram. Verificadas as referências literais aos campos existentes, carregamento das coleções, salvamento de avaliações, falhas de gravação, varredura, ignorar/restaurar, recomendações e cache de capas.
-Nenhum dado real de sua coleção foi alterado nesta sessão. Os arquivos ainda precisam ser publicados por você, pois a integração do GitHub não tem permissão de escrita.
+NUMERAÇÃO
+A varredura e a checagem de possíveis cadastros manuais respeitam a numeração antes de sugerir duplicatas: 2 com 2, 3 com 3, 7 com 7. Não sugerem 2 com 3 ou 7 com 5, inclusive quando os títulos estão em idiomas diferentes.
+São reconhecidos nomes como Season 2, 2nd Season, Temporada 2, Part 2, Cour 2 e o número simples ao final do título. Sem numeração identificada, o título é tratado como primeiro lançamento.
+O caso confirmado Spy x Family 2 / SPY×FAMILY Part 2 continua podendo ser revisado, mas temporadas e partes explicitamente diferentes são separadas na varredura.
+A lista continua sendo de possíveis duplicatas para revisão; nenhum par é unido sozinho. Os seletores manuais continuam disponíveis para casos específicos que você confirmar.
+
+VERIFICAÇÃO
+O teste reproduziu o clique perdido durante a atualização automática antes da correção e passou depois dela. Foram testados o clique no botão real da interface simulada, o estado Salvando, a confirmação do servidor, erros exibidos junto do botão, persistência e restauração.
+Unificação: retirada imediata da sugestão confirmada, inclusive com atualização automática trocando os objetos locais; preservação diante de leitura antiga; consulta pontual dos detalhes.
+Numeração: My Hero Academia 7 não é sugerido com Boku no Hero Academia 5; 2 não é sugerido com 3; 2 com Part 2 permanece elegível; partes explicitamente diferentes não são agrupadas.
+Mantidos os testes de carregamento sem campos removidos, notas, cache de capas, importação e episódios. Nenhum registro real foi ignorado ou unido nesta sessão. A correção ainda precisa ser publicada por você, pois a integração do GitHub disponível não tem permissão de escrita.

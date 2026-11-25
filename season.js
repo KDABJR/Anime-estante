@@ -9,7 +9,7 @@ function seasonNow(date = new Date()) {
   return {season:['WINTER','SPRING','SUMMER','FALL'][quarter],year:japan.getUTCFullYear(),
     label:['Inverno','Primavera','Verão','Outono'][quarter]+' de '+japan.getUTCFullYear()+' no Japão'};
 }
-function nameKey(value) { return (value || '').normalize('NFKC').toLocaleLowerCase().replace(/[\p{P}\p{Z}\s]/gu,''); }
+function nameKey(value) { return (value || '').normalize('NFKC').replace(/[×✕]/g,'x').toLocaleLowerCase().replace(/[\p{P}\p{Z}\s]/gu,''); }
 function mediaNames(media) { return [...new Set([media.title?.romaji,media.title?.english,media.title?.native,...(media.synonyms||[])].filter(Boolean))]; }
 function mediaSources(media) { return ['https://anilist.co/anime/'+media.id,...(media.idMal?['https://myanimelist.net/anime/'+media.idMal]:[])]; }
 function firstSeasonKey(value){return nameKey((value||'').replace(/\s+(?:(?:season|temporada)\s*)?1$/i,''));}

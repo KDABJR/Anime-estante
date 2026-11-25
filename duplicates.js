@@ -8,14 +8,25 @@ async function loadImportAliases(){
 function franchiseKey(value){return nameKey((value||'').replace(/\s+(?:(?:season|temporada|part|parte|cour)\s*)?\d{1,2}$/i,'')).replace(/(?:season|temporada|part|parte|cour)\d{1,2}$/,'');}
 function manualDuplicateCandidates(media,rows){
  const families=new Set(mediaNames(media).map(franchiseKey));
- return rows.filter(row=>!row._virtual && !row.deleted_at && !/^https:\/\/(?:anilist\.co|myanimelist\.net)\/anime\/\d+\/?$/.test(row.seasonal_source||'') &&
+ return rows.filter(row=>!row._virtual && !row.deleted_at && sameDuplicateNumber(row,{title:primaryTitle(media)||media.title?.native,alternate_title:media.title?.english}) && !/^https:\/\/(?:anilist\.co|myanimelist\.net)\/anime\/\d+\/?$/.test(row.seasonal_source||'') &&
   [row.title,row.alternate_title].filter(Boolean).some(title=>families.has(franchiseKey(title))) && /(?:\s\d{1,2}|(?:part|cour|season|temporada|parte)\s*\d{1,2})$/i.test(row.title||''));
 }
 function duplicateRows(){return cloudRows.filter(row=>!row.deleted_at&&!row._virtual);}
-let duplicateScanResults=[],ignoredDuplicatePairs=[],duplicateScanReady=false;
+let duplicateScanResults=[],ignoredDuplicatePairs=[],duplicateScanReady=false,ignoredDuplicateVersion=0;
 function duplicatePairKey(left,right){return [left,right].sort().join(':');}
-async function loadIgnoredDuplicates(){ignoredDuplicatePairs=await shelfRPC('anime_ignored_duplicates');}
+async function loadIgnoredDuplicates(){const version=ignoredDuplicateVersion;const pairs=await shelfRPC('anime_ignored_duplicates');if(!Array.isArray(pairs))throw new Error('Não foi possível carregar as sugestões ignoradas.');if(version===ignoredDuplicateVersion)ignoredDuplicatePairs=pairs;}
+function duplicateNumber(row){
+ for(const title of [row.title,row.alternate_title].filter(Boolean)){
+  const season=title.match(/(?:season|temporada)\s*(\d{1,2})\b/i)||title.match(/\b(\d{1,2})(?:st|nd|rd|th)\s+season\b/i);
+  const part=title.match(/(?:part|parte|cour)\s*(\d{1,2})\b/i);
+  const manual=!season&&!part?title.match(/\s+(\d{1,2})\s*$/):null;
+  if(season||part||manual)return {number:Number((season||part||manual)[1]),season:season?Number(season[1]):null,part:part?Number(part[1]):null};
+ }
+ return {number:1,season:null,part:null};
+}
+function sameDuplicateNumber(a,b){const x=duplicateNumber(a),y=duplicateNumber(b);return x.number===y.number && !(x.season!==null&&y.season!==null&&x.season!==y.season) && !(x.part!==null&&y.part!==null&&x.part!==y.part);}
 function duplicatePairReason(a,b){
+ if(!sameDuplicateNumber(a,b))return null;
  const source=x=>(x.seasonal_source||'').replace(/\/$/,'');
  if(source(a)&&source(a)===source(b))return 'Mesmo identificador do catálogo';
  const coversame=a.cover_path&&b.cover_path&&/^[a-f0-9]{64}\./i.test(a.cover_path.split('/').pop())&&a.cover_path.split('/').pop()===b.cover_path.split('/').pop();
@@ -44,8 +55,9 @@ function renderDuplicateSuggestions(){
   const caption=document.createElement('p');caption.textContent=pair.reason;caption.className='small';
   const review=document.createElement('button');review.textContent='Revisar '+left.title+' + '+right.title;
   review.addEventListener('click',()=>{el('duplicateKeep').value=left.id;el('duplicateDrop').value=right.id;previewDuplicatePair();});
-  const ignore=document.createElement('button');ignore.textContent='Ignorar sugestão';ignore.addEventListener('click',()=>ignoreDuplicatePair(pair.left,pair.right,true));
-  li.append(caption,review,ignore);list.append(li);
+  const notice=document.createElement('p');notice.className='small';notice.setAttribute('role','status');
+  const ignore=document.createElement('button');ignore.textContent='Ignorar sugestão';ignore.addEventListener('click',()=>ignoreDuplicatePair(pair.left,pair.right,true,{button:ignore,notice}));
+  li.append(caption,review,ignore,notice);list.append(li);
  }
  if(duplicateScanReady)el('duplicateScanInfo').textContent=visible.length+' possível(is) duplicata(s) para revisar.'+(visible.length>100?' Mostrando as primeiras 100. Ignore ou unifique para ver as próximas.':'');
 }
@@ -53,16 +65,23 @@ function renderIgnoredDuplicates(){
  const list=el('ignoredDuplicateList');list.replaceChildren();const rows=new Map(duplicateRows().map(row=>[row.id,row]));let count=0;
  for(const pair of ignoredDuplicatePairs){if(!rows.has(pair.left_id)||!rows.has(pair.right_id))continue;count++;
   const li=document.createElement('li'),name=document.createElement('span');name.textContent=rows.get(pair.left_id).title+' + '+rows.get(pair.right_id).title+' ';
-  const restore=document.createElement('button');restore.textContent='Voltar a analisar';restore.addEventListener('click',()=>ignoreDuplicatePair(pair.left_id,pair.right_id,false));li.append(name,restore);list.append(li);
+  const notice=document.createElement('p');notice.className='small';notice.setAttribute('role','status');const restore=document.createElement('button');restore.textContent='Voltar a analisar';restore.addEventListener('click',()=>ignoreDuplicatePair(pair.left_id,pair.right_id,false,{button:restore,notice}));li.append(name,restore,notice);list.append(li);
  }
  if(!count){const li=document.createElement('li');li.textContent='Nenhuma sugestão ignorada.';list.append(li);}
 }
-async function ignoreDuplicatePair(left,right,ignore){
- if(!isAppOwner()||sharingReadonly||importing||pending||loading||editor.open)return;
- importing=true;
- try{ignoredDuplicatePairs=await shelfRPC('anime_ignore_duplicate',{p_left:left,p_right:right,p_ignore:ignore});renderDuplicateSuggestions();renderIgnoredDuplicates();el('duplicateInfo').textContent=ignore?'Sugestão ignorada. Os dois animes e seus status foram mantidos.':'Sugestão liberada para análise novamente.';}
- catch(error){el('duplicateInfo').textContent=error.message;}
- finally{importing=false;}
+async function ignoreDuplicatePair(left,right,ignore,feedback=null){
+ const say=message=>{el('duplicateInfo').textContent=message;if(feedback?.notice)feedback.notice.textContent=message;};
+ if(!isAppOwner()||sharingReadonly){say('Abra a sua coleção na conta @KDAB para revisar esta sugestão.');return;}
+ if(importing||pending||editor.open){say('Aguarde a operação atual terminar para revisar esta sugestão.');return;}
+ importing=true;const oldLabel=feedback?.button?.textContent;
+ if(feedback?.button){feedback.button.disabled=true;feedback.button.textContent='Salvando…';}say('Salvando sua decisão…');
+ try{
+  const pairs=await shelfRPC('anime_ignore_duplicate',{p_left:left,p_right:right,p_ignore:ignore});
+  if(!Array.isArray(pairs) || pairs.some(p=>duplicatePairKey(p.left_id,p.right_id)===duplicatePairKey(left,right))!==ignore)throw new Error('O servidor não confirmou a alteração. Tente novamente.');
+  ignoredDuplicateVersion++;ignoredDuplicatePairs=pairs;if(ignore && el('duplicateKeep').value && el('duplicateDrop').value && duplicatePairKey(el('duplicateKeep').value,el('duplicateDrop').value)===duplicatePairKey(left,right)){el('duplicateKeep').value=el('duplicateDrop').value='';el('duplicatePreview').replaceChildren();el('duplicateConfirm').disabled=true;}renderDuplicateSuggestions();renderIgnoredDuplicates();
+  say(ignore?'Sugestão ignorada. Os dois animes e seus status foram mantidos.':'Sugestão liberada para análise novamente.');
+ }catch(error){say('Não foi possível salvar: '+error.message);}
+ finally{importing=false;if(feedback?.button){feedback.button.disabled=false;feedback.button.textContent=oldLabel;}if(typeof applySharingAccess==='function')applySharingAccess();}
 }
 async function scanDuplicates(){
  if(!isAppOwner()||sharingReadonly||importing||pending||loading||editor.open)return;
@@ -99,16 +118,24 @@ async function previewDuplicatePair(){
  }
 }
 async function mergeSelectedDuplicates(){
- if(!isAppOwner()||sharingReadonly||importing||pending||loading||editor.open)return;
+ if(!isAppOwner()||sharingReadonly){el('duplicateInfo').textContent='Abra a sua coleção na conta @KDAB para unificar.';return;}
+ if(importing||pending||editor.open){el('duplicateInfo').textContent='Aguarde a operação atual terminar antes de unificar.';return;}
  const keep=cloudRows.find(r=>r.id===el('duplicateKeep').value),drop=cloudRows.find(r=>r.id===el('duplicateDrop').value);
  if(!keep||!drop||keep.id===drop.id)return;
- importing=true;el('duplicateConfirm').disabled=true;el('duplicateInfo').textContent='Unificando os registros de cada conta…';
+ importing=true;let merged=false;el('duplicateConfirm').disabled=true;el('duplicateInfo').textContent='Unificando os registros de cada conta…';
  try{
   const result=await shelfRPC('anime_merge_duplicates',{p_keep:keep.id,p_drop:drop.id,p_keep_revision:keep.updated_at,p_drop_revision:drop.updated_at});
+  merged=true;collectionMutationVersion++;cloudRows=cloudRows.map(row=>row.id===drop.id?{...row,deleted_at:new Date().toISOString(),shared_title_id:null}:row);
+  duplicateScanResults=duplicateScanResults.filter(pair=>pair.left!==drop.id&&pair.right!==drop.id);
+  items=collectionSnapshot().items;lastData='';render();renderDuplicateSuggestions();renderIgnoredDuplicates();
+  el('duplicateKeep').value=el('duplicateDrop').value='';el('duplicatePreview').replaceChildren();
   el('duplicateInfo').textContent='Unificado em '+result.title+'. Registros de '+result.accounts_preserved+' conta(s) preservados, com cópia de segurança.';
-  el('duplicateKeep').value=el('duplicateDrop').value='';el('duplicatePreview').replaceChildren();lastData='';await loadImportAliases();
+  try{
+   const [response]=await Promise.all([send('/rest/v1/animes?select=*&id=eq.'+encodeURIComponent(keep.id)+'&deleted_at=is.null&limit=1'),loadImportAliases()]);
+   const fresh=await response.json();if(fresh.length){const index=cloudRows.findIndex(row=>row.id===keep.id);if(index>=0)cloudRows[index]={...cloudRows[index],...fresh[0]};items=collectionSnapshot().items;lastData='';render();}
+  }catch{el('duplicateInfo').textContent+=' A união foi concluída; reabra a página para atualizar os detalhes.';}
  }catch(error){el('duplicateInfo').textContent=error.message;}
- finally{importing=false;await load();renderDuplicates();}
+ finally{importing=false;renderDuplicates();el('duplicateConfirm').disabled=merged||!el('duplicateKeep').value||!el('duplicateDrop').value;if(typeof applySharingAccess==='function')applySharingAccess();}
 }
 async function updateEpisodeTotals(onProgress){
  const rows=cloudRows.filter(row=>!row.deleted_at&&!row._virtual);let updated=0,unchanged=0;const failures=[];
@@ -135,4 +162,4 @@ el('scanDuplicates').addEventListener('click',scanDuplicates);
 el('ignoredDuplicatePanel').addEventListener('toggle',async()=>{if(!el('ignoredDuplicatePanel').open || !isAppOwner() || importing)return;try{await loadIgnoredDuplicates();renderIgnoredDuplicates();}catch(error){el('duplicateInfo').textContent=error.message;}});
 el('updateEpisodes').addEventListener('click',()=>seasonalJob('episodes'));
 
-function resetDuplicateUI(){duplicatePreviewTicket++;duplicatePreviewUrls.forEach(URL.revokeObjectURL);duplicatePreviewUrls=[];importAliases=[];duplicateScanResults=[];ignoredDuplicatePairs=[];duplicateScanReady=false;for(const id of ['duplicateKeep','duplicateDrop'])el(id).replaceChildren(new Option('Selecione um anime',''));el('duplicatePreview').replaceChildren();el('duplicateSuggestions').replaceChildren();el('duplicateInfo').textContent='';el('ownerTools').hidden=true;}
+function resetDuplicateUI(){duplicatePreviewTicket++;duplicatePreviewUrls.forEach(URL.revokeObjectURL);duplicatePreviewUrls=[];importAliases=[];duplicateScanResults=[];ignoredDuplicatePairs=[];ignoredDuplicateVersion++;duplicateScanReady=false;for(const id of ['duplicateKeep','duplicateDrop'])el(id).replaceChildren(new Option('Selecione um anime',''));el('duplicatePreview').replaceChildren();el('duplicateSuggestions').replaceChildren();el('duplicateInfo').textContent='';el('ownerTools').hidden=true;}
