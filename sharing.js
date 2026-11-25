@@ -14,13 +14,17 @@ function baseRowMatches(row,title){
 function virtualSharedRows(rows,catalog,userId) {
  const linked=new Set(rows.map(row=>row.shared_title_id).filter(Boolean));
  const readable=value=>!!value && !/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(value);
+ const baseOwners=new Set(catalog.filter(t=>t.base_source_user).map(t=>t.base_source_user));
+ const onlyBaseOwner=baseOwners.size===1?[...baseOwners][0]:null;
+ const directIds=new Set(rows.map(row=>row.user_id+':'+row.id));
  const result=rows.map(row=>{
+  if(row.user_id===onlyBaseOwner)return row;
   const base=catalog.find(t=>t.base_source_anime && t.base_source_user!==row.user_id && baseRowMatches(row,t));
   if(!base)return row;
   return {...row,_display_title:!readable(row.title)&&readable(base.title)?base.title:row.title,
    _display_alt:readable(row.alternate_title)?row.alternate_title:readable(base.alternate_title)?base.alternate_title:null};
  });
- for(const title of catalog) if(!linked.has(title.id) && (!title.base_source_anime || !rows.some(row=>baseRowMatches(row,title)))) result.push({id:title.id,user_id:userId,shared_title_id:title.base_source_anime ? title.shared_title_id : title.id,_base_user:title.base_source_user,_base_anime:title.base_source_anime,
+ for(const title of catalog) if(!linked.has(title.id) && (!title.base_source_anime || (!directIds.has(title.base_source_user+':'+title.base_source_anime) && !rows.some(row=>baseRowMatches(row,title))))) result.push({id:title.id,user_id:userId,shared_title_id:title.base_source_anime ? title.shared_title_id : title.id,_base_user:title.base_source_user,_base_anime:title.base_source_anime,
   title:title.title,alternate_title:title.alternate_title,total:title.total,cover_path:title.cover_path,
   seasonal_source:title.seasonal_source,added_at:title.added_at,updated_at:'shared:'+title.id,
   status:'Pendente',episode:0,rating:null,favorite:false,notes:'',deleted_at:null,_virtual:true});
@@ -31,7 +35,7 @@ async function sharedCollectionRows(ownRows) {
  try {state=await shelfRPC('shelf_state');}
  catch(error){
   if(/Could not find.*shelf_state|function.*shelf_state.*does not exist/i.test(error.message)) {
-   el('sharingInfo').textContent='Para ativar o compartilhamento, execute o arquivo Compartilhar-Estante.sql no Supabase.';
+   el('connection').textContent='Para ativar o compartilhamento, execute o arquivo Compartilhar-Estante.sql no Supabase.';
    return ownRows;
   }
   throw error;
@@ -57,22 +61,7 @@ function updateSharingControls(user) {
  const selector=el('viewCollection');selector.replaceChildren(new Option('Minha coleção',''));
  for(const member of (typeof visibleCollectionPeople==='function'?visibleCollectionPeople():sharingState.members)) if(member.user_id!==user.id) selector.add(new Option((typeof accountName==='function'?accountName(member.username,member.label):member.label)+' · só visualizar',member.user_id));
  selector.value=sharingTarget;
- el('sharedShelfName').textContent=sharingState.shelf ? sharingState.shelf.name+' · '+sharingState.members.length+' pessoa(s)' : 'Sua coleção ainda não está compartilhada.';
- el('createShelf').hidden=el('joinShelf').hidden=!!sharingState.shelf;
- el('inviteShelf').hidden=!sharingState.shelf || sharingState.shelf.owner_id!==user.id;
  el('viewCollectionLabel').hidden=!sharingState.shelf && !(sharingState.friends||[]).length;
- const membersList=el('sharedMembers');membersList.replaceChildren();
- for(const member of sharingState.members){
-  const li=document.createElement('li');li.textContent=(typeof accountName==='function'?accountName(member.username,member.label):member.label)+(member.user_id===user.id?' (você)':'');
-  if(member.user_id!==sharingState.shelf.owner_id && (sharingState.shelf.owner_id===user.id || member.user_id===user.id)){
-   const button=document.createElement('button');button.textContent=member.user_id===user.id?'Sair da estante':'Remover acesso';
-   button.style.marginLeft='8px';button.addEventListener('click',()=>{
-    if(pending||importing||loading||editor.open)return;
-    removingMember=member.user_id;el('removeMemberInfo').textContent='Encerrar o acesso de '+member.label+'?';
-    el('removeMemberError').textContent='';el('removeMemberDialog').showModal();
-   });li.append(button);
-  }membersList.append(li);
- }
  if(typeof updateAccountControls==='function')updateAccountControls(user);
  applySharingAccess();
 }
@@ -82,8 +71,6 @@ function applySharingAccess() {
  if(readonly) el('viewBanner').textContent='Só visualizar · '+(typeof collectionPersonName==='function'?collectionPersonName(sharingTarget):(sharingState.members.find(m=>m.user_id===sharingTarget)?.label||'Outra pessoa'))+' · nenhuma alteração será salva nesta coleção.';
  const allowed=typeof isAppOwner==='function' && isAppOwner();
  el('add').disabled=readonly || importing || !allowed;el('add').hidden=!allowed;
- el('migrationPanel').hidden=readonly || !allowed;
- if(el('sharingPanel'))el('sharingPanel').hidden=readonly || !allowed;
  if(el('ownerTools'))el('ownerTools').hidden=readonly || !allowed;
  if(el('collectionHeading'))el('collectionHeading').textContent=readonly?'Coleção de '+(typeof collectionPersonName==='function'?collectionPersonName(sharingTarget):'outra pessoa'):'Minha coleção';
  el('seasonPanel').hidden=readonly || !allowed;
@@ -105,47 +92,7 @@ async function saveVirtualMetadata(row,fields) {
  const data=await response.json();if(!data.length)throw new Error('Atualize a coleção e tente novamente.');
  Object.assign(row,data[0],{_virtual:false});
 }
-async function sharingAction(action) {
- if(pending||importing||loading||editor.open) {el('sharingInfo').textContent='Aguarde a operação atual terminar.';return;}
- const label=el('memberLabel').value.trim();
- if(action!=='invite'&&!label){el('sharingInfo').textContent='Preencha seu nome de exibição.';return;}
- importing=true;
- for(const id of ['createShelf','joinShelf','inviteShelf','viewCollection','add'])el(id).disabled=true;
- el('sharingInfo').textContent='Conectando…';
- try {
-  if(action==='create')await shelfRPC('shelf_create',{p_name:el('shelfName').value.trim()||'Nossa estante',p_label:label});
-  else if(action==='join')await shelfRPC('shelf_join',{p_token:el('inviteCode').value.trim(),p_label:label});
-  else {
-   const code=await shelfRPC('shelf_invite');el('generatedInvite').value=code;el('invitationResult').hidden=false;
-  }
-  el('sharingInfo').textContent=action==='invite'?'Convite válido por 48 horas, para uma pessoa. Gerar outro cancela o anterior.':'Estante conectada. Seu progresso permanece individual.';
-  sharingTarget='';lastData='';
- }catch(error){el('sharingInfo').textContent=error.message;}
- finally{
-  importing=false;for(const id of ['createShelf','joinShelf','inviteShelf','viewCollection','add'])el(id).disabled=false;
-  load();
- }
-}
-el('createShelf').addEventListener('click',()=>sharingAction('create'));
-el('joinShelf').addEventListener('click',()=>sharingAction('join'));
-el('inviteShelf').addEventListener('click',()=>sharingAction('invite'));
 el('viewCollection').addEventListener('change',()=>{
  if(pending||importing||loading||editor.open){el('viewCollection').value=sharingTarget;return;}
  sharingTarget=el('viewCollection').value;sharingReadonly=!!sharingTarget;lastData='';page=0;applySharingAccess();load();
 });
-el('copyInvite').addEventListener('click',async()=>{
- try {await navigator.clipboard.writeText(el('generatedInvite').value);el('sharingInfo').textContent='Convite copiado.';}
- catch {el('generatedInvite').select();el('sharingInfo').textContent='Selecione e copie o código do convite.';}
-});
-
-let removingMember=null;
-el('cancelRemoveMember').addEventListener('click',()=>el('removeMemberDialog').close());
-el('confirmRemoveMember').addEventListener('click',async()=>{
- if(!removingMember||pending||importing||loading)return;
- importing=true;el('confirmRemoveMember').disabled=el('cancelRemoveMember').disabled=true;
- try{await shelfRPC('shelf_remove',{p_user:removingMember});sharingTarget='';sharingReadonly=false;lastData='';
- el('generatedInvite').value='';el('invitationResult').hidden=true;el('removeMemberDialog').close();}
- catch(error){el('removeMemberError').textContent=error.message;}
- finally{importing=false;el('confirmRemoveMember').disabled=el('cancelRemoveMember').disabled=false;load();}
-});
-el('removeMemberDialog').addEventListener('cancel',event=>{if(importing)event.preventDefault();});

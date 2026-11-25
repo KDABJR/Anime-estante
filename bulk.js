@@ -25,7 +25,7 @@ async function importBulk(target,onProgress){
 async function startBulkImport(){
  if(!isAppOwner()||sharingReadonly||importing||pending||loading||editor.open)return;
  importing=true;bulkStopRequested=false;
- const ids=['bulkImport','bulkAmount','seasonImport','completeTitles','importButton','add','seasonAuto'];ids.forEach(id=>el(id).disabled=true);el('bulkStop').hidden=false;el('bulkWarnings').replaceChildren();
+ const ids=['bulkImport','bulkAmount','seasonImport','completeTitles','add','seasonAuto'];ids.forEach(id=>el(id).disabled=true);el('bulkStop').hidden=false;el('bulkWarnings').replaceChildren();
  try{
   await cloudCollection();if(typeof loadImportAliases==='function')await loadImportAliases();const result=await importBulk(Number(el('bulkAmount').value),text=>el('bulkInfo').textContent=text);
   el('bulkInfo').textContent=result.message+(result.failures.length?' Há '+result.failures.length+' aviso(s) abaixo.':'');

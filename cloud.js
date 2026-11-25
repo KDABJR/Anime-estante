@@ -8,6 +8,7 @@ try { session = JSON.parse(localStorage.getItem(SESSION_KEY)); } catch {}
 let refreshTask;
 
 function keepSession(value) {
+  if(!value || (session?.user?.id && value.user?.id && session.user.id!==value.user.id)){if(typeof coverCacheReady!=='undefined' && coverCacheReady)clearCoverCache();if(typeof collectionMutationVersion!=='undefined')collectionMutationVersion++;}
   session = value;
   if (value) localStorage.setItem(SESSION_KEY, JSON.stringify(value));
   else localStorage.removeItem(SESSION_KEY);
@@ -72,7 +73,11 @@ if (callback.get('access_token')) {
   history.replaceState(null, '', location.pathname);
 }
 let cloudRows = [];
+var collectionMutationVersion=0;
+function collectionItem(row){return {Id:row.id,Revision:row.updated_at,Title:row._display_title||row.title,AlternateTitle:row._display_alt!==undefined?row._display_alt||'':row.alternate_title||'',Status:row.status,Notes:row.notes,Episode:row.episode,Total:row.total,Rating:row.rating,Favorite:row.favorite,HasCover:!!row.cover_path,AddedAt:row.added_at};}
+function collectionSnapshot(){return {statuses:STATUSES,items:cloudRows.filter(row=>!row.deleted_at).map(collectionItem)};}
 async function cloudCollection() {
+  const epoch=collectionMutationVersion;
   const rows = [];
   for (let offset = 0; ; offset += 500) {
     const response = await send('/rest/v1/animes?select=*&order=id&limit=500&offset=' + offset);
@@ -81,12 +86,8 @@ async function cloudCollection() {
     if (batch.length < 500) break;
   }
   const visibleRows = typeof sharedCollectionRows === "function" ? await sharedCollectionRows(rows) : rows;
-  cloudRows = visibleRows;
-  return { statuses: STATUSES, items: visibleRows.filter(row => !row.deleted_at).map(row => ({
-    Id: row.id, Revision: row.updated_at, Title: row._display_title || row.title, AlternateTitle: row._display_alt !== undefined ? row._display_alt || '' : row.alternate_title || '',
-    Status: row.status, Notes: row.notes, Episode: row.episode, Total: row.total,
-    Rating: row.rating, Favorite: row.favorite, HasCover: !!row.cover_path, AddedAt: row.added_at
-  })) };
+  if(epoch===collectionMutationVersion)cloudRows=visibleRows;
+  return collectionSnapshot();
 }
 async function currentUser() {
   if (session?.user?.id) return session.user;
@@ -147,8 +148,13 @@ async function saveCloud(change) {
     method: existing ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
     body: JSON.stringify(row)
   });
-  if (!(await response.json()).length) throw new Error('Este anime mudou em outro aparelho. Feche e reabra a edição.');
-  return { Id: id };
+  const saved=await response.json();
+  if (!saved.length) throw new Error('Este anime mudou em outro aparelho. Feche e reabra a edição.');
+  const fresh={...original,...row,...saved[0],_virtual:false};
+  const index=cloudRows.findIndex(item=>item.id===id);
+  if(index<0)cloudRows.push(fresh);else cloudRows[index]=fresh;
+  collectionMutationVersion++;
+  return { Id: id, Item:collectionItem(fresh) };
 }
 async function request(path, options = {}) {
   if (path === '/api/collection') return new Response(JSON.stringify(await cloudCollection()));
@@ -160,3 +166,20 @@ async function request(path, options = {}) {
   }
   throw new Error('Ação indisponível.');
 }
+
+var coverCacheReady=false;const coverCache=new Map();let coverCacheGeneration=0,coverCacheBytes=0;
+function clearCoverCache(){coverCacheGeneration++;for(const entry of coverCache.values())if(entry.url)URL.revokeObjectURL(entry.url);coverCache.clear();coverCacheBytes=0;}
+function trimCoverCache(){while(coverCache.size>72 || (coverCacheBytes>24*1024*1024 && coverCache.size>1)){const [key,entry]=coverCache.entries().next().value;coverCache.delete(key);coverCacheBytes-=entry.bytes||0;if(entry.url)URL.revokeObjectURL(entry.url);}}
+async function getCoverUrl(id){
+ const row=cloudRows.find(item=>item.id===id);if(!row?.cover_path)throw new Error('Capa indisponível.');
+ const key=(session?.user?.id||'')+':'+row.cover_path;
+ if(coverCache.has(key)){const entry=coverCache.get(key);coverCache.delete(key);coverCache.set(key,entry);return entry.task;}
+ const entry={url:null,bytes:0},generation=coverCacheGeneration;
+ entry.task=(async()=>{const response=await request('/api/cover/'+encodeURIComponent(id));const blob=await response.blob();
+  if(generation!==coverCacheGeneration || coverCache.get(key)!==entry)throw new Error('Capa fora da página atual.');
+  entry.url=URL.createObjectURL(blob);entry.bytes=blob.size;coverCacheBytes+=blob.size;trimCoverCache();return entry.url;
+ })().catch(error=>{if(coverCache.get(key)===entry)coverCache.delete(key);throw error;});
+ coverCache.set(key,entry);trimCoverCache();return entry.task;
+}
+
+coverCacheReady=true;

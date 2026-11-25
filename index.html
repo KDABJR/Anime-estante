@@ -58,7 +58,7 @@ textarea { min-height:85px }
 #friendsInfo,#addFriendError,#removeFriendError { color:var(--muted);overflow-wrap:anywhere; }
 #receivedFriends li,#sentFriends li { margin:10px 0; }#receivedFriends button,#sentFriends button { margin:4px; }
 </style>
-<link rel="stylesheet" href="layout.css?v=10">
+<link rel="stylesheet" href="layout.css?v=11">
 <main>
 <section id="loginPanel" aria-label="Entrar na estante">
 <h1>Anime Estante</h1><p>Acesse sua coleção no PC e no celular.</p>
@@ -70,7 +70,7 @@ textarea { min-height:85px }
 <p id="loginInfo" role="status"></p>
 </form></section>
 <div id="library" hidden>
-<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.8</div><h1>Anime Estante</h1></div><div class="actions"><span id="accountHandle" class="account-handle">Minha conta</span><button id="logout" class="quiet">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
+<header><div><div class="kicker">MINHA COLEÇÃO ONLINE · 2.9</div><h1>Anime Estante</h1></div><div class="actions"><span id="accountHandle" class="account-handle">Minha conta</span><button id="logout" class="quiet">Sair</button><button id="add" class="primary" disabled>+ Adicionar</button></div></header>
 <div class="app-tabs" role="tablist" aria-label="Navegação principal"><button id="collectionTabButton" role="tab" aria-controls="collectionTab" aria-selected="true">Coleção</button><button id="recommendedTabButton" role="tab" aria-controls="recommendedTab" aria-selected="false">Recomendados</button><button id="friendsTabButton" role="tab" aria-controls="friendsTab" aria-selected="false">Amigos<span id="friendTabBadge"></span></button></div>
 <section id="collectionTab" role="tabpanel" aria-labelledby="collectionTabButton">
 <div class="collection-intro"><div><p class="eyebrow">SUA ESTANTE</p><h2 id="collectionHeading">Minha coleção</h2></div></div>
@@ -90,24 +90,13 @@ textarea { min-height:85px }
 </select></div>
 
 
-<details id="ownerTools" class="tools-panel" hidden><summary>Ferramentas da coleção</summary><div class="tools-grid"><details id="duplicatesPanel" class="migration"><summary>Unificar duplicados</summary><p>Revise os títulos e as capas antes de confirmar. Partes e temporadas diferentes devem continuar separadas. O cadastro principal mantém seu nome e sua capa. Cada conta conserva os próprios dados, com cópia protegida antes da união.</p><ul id="duplicateSuggestions" class="small" style="max-height:180px;overflow:auto"></ul><label>Cadastro principal<select id="duplicateKeep"><option value="">Selecione um anime</option></select></label><label>Duplicado<select id="duplicateDrop"><option value="">Selecione um anime</option></select></label><div id="duplicatePreview" class="duplicate-preview"></div><button id="duplicateConfirm" disabled>Unificar e preservar o progresso</button><p id="duplicateInfo" role="status"></p></details><details id="bulkPanel" class="migration"><summary>Importar vários animes do catálogo</summary><p>Adicione novos títulos com capas, como Pendente. Os já cadastrados serão ignorados. Ecchi é permitido; hentai e conteúdo adulto explícito são excluídos pela classificação do catálogo.</p><label>Quantidade de novos animes<select id="bulkAmount"><option value="50">50 animes</option><option value="100" selected>100 animes</option><option value="250">250 animes</option><option value="500">500 animes</option></select></label><div class="actions"><button id="bulkImport">Importar novos animes</button><button id="bulkStop" hidden>Pausar</button></div><p class="small">Mantenha o app aberto. Lotes grandes podem levar vários minutos. A pausa mantém os títulos já salvos.</p><p id="bulkInfo" role="status"></p><ul id="bulkWarnings" class="small" style="max-height:180px;overflow:auto"></ul></details><details id="seasonPanel" class="migration"><summary>Temporada japonesa e títulos</summary>
+<details id="ownerTools" class="tools-panel" hidden><summary>Ferramentas da coleção</summary><div class="tools-grid"><details id="duplicatesPanel" class="migration"><summary>Duplicados</summary><p>Revise os títulos e as capas antes de confirmar. Partes e temporadas diferentes devem continuar separadas. O cadastro principal mantém seu nome e sua capa. Cada conta conserva os próprios dados, com cópia protegida antes da união.</p><div class="actions"><button id="scanDuplicates" class="primary">Fazer varredura</button></div><p id="duplicateScanInfo" role="status">Clique em Fazer varredura para analisar a coleção atual.</p><ul id="duplicateSuggestions" class="small" style="max-height:180px;overflow:auto"></ul><details id="ignoredDuplicatePanel"><summary>Sugestões ignoradas</summary><ul id="ignoredDuplicateList"></ul></details><label>Cadastro principal<select id="duplicateKeep"><option value="">Selecione um anime</option></select></label><label>Duplicado<select id="duplicateDrop"><option value="">Selecione um anime</option></select></label><div id="duplicatePreview" class="duplicate-preview"></div><button id="duplicateConfirm" disabled>Unificar e preservar o progresso</button><p id="duplicateInfo" role="status"></p></details><details id="bulkPanel" class="migration"><summary>Importar vários animes do catálogo</summary><p>Adicione novos títulos com capas, como Pendente. Os já cadastrados serão ignorados. Ecchi é permitido; hentai e conteúdo adulto explícito são excluídos pela classificação do catálogo.</p><label>Quantidade de novos animes<select id="bulkAmount"><option value="50">50 animes</option><option value="100" selected>100 animes</option><option value="250">250 animes</option><option value="500">500 animes</option></select></label><div class="actions"><button id="bulkImport">Importar novos animes</button><button id="bulkStop" hidden>Pausar</button></div><p class="small">Mantenha o app aberto. Lotes grandes podem levar vários minutos. A pausa mantém os títulos já salvos.</p><p id="bulkInfo" role="status"></p><ul id="bulkWarnings" class="small" style="max-height:180px;overflow:auto"></ul></details><details id="seasonPanel" class="migration"><summary>Temporada japonesa e títulos</summary>
 <p id="seasonLabel">Temporada atual no Japão</p>
 <div class="actions" style="flex-wrap:wrap;justify-content:start"><button id="seasonImport">Importar temporada atual</button><button id="completeTitles">Corrigir nomes e completar títulos</button><button id="updateEpisodes">Atualizar total de episódios</button></div>
 <label class="inline" style="margin-top:12px"><input id="seasonAuto" type="checkbox"> Importar automaticamente neste aparelho</label>
 <p>Adiciona como Pendente, com capa e dois títulos quando disponíveis. Preserva seus cadastros. A verificação automática ocorre diariamente com o app aberto e também quando a temporada muda. Ative em cada aparelho desejado.</p>
 <p class="small">Catálogo: AniList · origem Japão · sem conteúdo adulto explícito. Pode incluir filmes, especiais e estreias previstas.</p>
-<p id="seasonInfo" role="status"></p><ul id="seasonErrors" class="small" style="max-height:180px;overflow:auto"></ul></details><details id="migrationPanel" class="migration"><summary>Trazer coleção do PC</summary>
-<p>Exporte uma cópia pelo botão Nuvem do app Windows e selecione o arquivo aqui.</p>
-<input type="file" id="importFile" accept=".xml" aria-label="Arquivo da coleção">
-<button id="importButton" type="button">Importar coleção e capas</button>
-<p id="importInfo" role="status"></p></details><details id="sharingPanel" class="migration"><summary>Compartilhar estante</summary>
-<p>Os animes e suas capas entram na lista comum. Status, episódios, notas, favoritos e anotações continuam individuais. Os membros podem consultar a coleção uns dos outros em modo só leitura. Entrar também compartilha os títulos que você já tem.</p>
-<p id="sharedShelfName"></p><ul id="sharedMembers" class="small"></ul>
-<div class="row"><label>Seu nome de exibição<input id="memberLabel" maxlength="60" autocomplete="nickname"></label><label>Nome da estante<input id="shelfName" maxlength="80" placeholder="Nossa estante"></label></div>
-<div class="actions" style="margin-top:10px;flex-wrap:wrap"><button id="createShelf">Compartilhar minha estante</button><button id="inviteShelf" hidden>Gerar convite</button></div>
-<label style="margin-top:10px">Código recebido<input id="inviteCode" maxlength="64" autocomplete="off" spellcheck="false"></label><button id="joinShelf" style="margin-top:8px">Entrar na estante</button>
-<div id="invitationResult" hidden><label style="margin-top:10px">Envie este código para a outra pessoa<input id="generatedInvite" readonly></label><button id="copyInvite">Copiar convite</button></div>
-<p id="sharingInfo" role="status"></p></details></div></details>
+<p id="seasonInfo" role="status"></p><ul id="seasonErrors" class="small" style="max-height:180px;overflow:auto"></ul></details></div></details>
 <div id="statusTabs" class="status-tabs" aria-label="Status da coleção exibida"></div>
 <section id="grid" aria-label="Cartões da estante"></section>
 <nav id="pages" aria-label="Paginação" hidden>
@@ -133,7 +122,7 @@ textarea { min-height:85px }
 </section></div></main>
 <dialog id="addFriendDialog"><form id="addFriendForm"><h2>Adicionar amigo</h2><label>Nome único da pessoa<input id="friendUsername" placeholder="@nome" maxlength="25" required autocomplete="off" autocapitalize="none" spellcheck="false"></label><p class="small">Após aceitar, vocês poderão consultar as coleções um do outro. A amizade não altera seu status ou progresso.</p><p id="addFriendError" role="status"></p><div class="actions"><button type="button" id="cancelAddFriend">Cancelar</button><button type="submit" id="sendFriendRequest" class="primary">Enviar pedido</button></div></form></dialog>
 <dialog id="removeFriendDialog"><h2>Remover amigo</h2><p id="removeFriendName"></p><p class="small">A remoção encerra o acesso pela amizade. Se vocês também compartilham uma estante, o acesso dessa estante continua.</p><p id="removeFriendError" role="status"></p><div class="actions"><button id="cancelRemoveFriend">Cancelar</button><button id="confirmRemoveFriend">Remover</button></div></dialog>
-<dialog id="removeMemberDialog"><h2>Encerrar compartilhamento</h2><p id="removeMemberInfo"></p><p>Os registros pessoais já salvos serão mantidos. O acesso às coleções e capas dos outros membros será encerrado.</p><div class="actions"><button id="cancelRemoveMember">Cancelar</button><button id="confirmRemoveMember">Encerrar acesso</button></div><p id="removeMemberError" role="status"></p></dialog>
+
 <dialog id="editor">
 <form id="editForm">
   <h2 id="editorTitle">Editar anime</h2>
@@ -151,7 +140,7 @@ textarea { min-height:85px }
   <div class="actions"><button id="cancel" type="button">Cancelar</button><button class="primary" id="save">Salvar na nuvem</button></div>
 </form>
 </dialog>
-<script src="cloud.js?v=10"></script>
+<script src="cloud.js?v=11"></script>
 <script>
 const el = id => document.getElementById(id);
 const editor = el('editor'), form = el('editForm');
@@ -167,7 +156,7 @@ function setOptions(select, names, first) {
 }
 
 async function load() {
-  if (loading || pending || !session || importing) return;
+  if (loading || pending || !session || importing || editor.open) return;
   loading = true;
   try {
     const response = await request('/api/collection');
@@ -232,8 +221,7 @@ function render() {
   page = Math.min(page, totalPages - 1);
   const grid = el('grid');
   grid.replaceChildren();
-  images.forEach(url => URL.revokeObjectURL(url));
-  images = [];
+
   for (const item of matches.slice(page * pageSize, (page + 1) * pageSize)) {
     const card = document.createElement('button');
     card.className = 'card';
@@ -241,12 +229,10 @@ function render() {
     card.addEventListener('click', () => edit(item));
     const art = textNode('div', item.HasCover ? '' : 'SEM CAPA', 'art');
     if (item.HasCover) {
-      request('/api/cover/' + encodeURIComponent(item.Id)).then(r => r.blob()).then(blob => {
+      getCoverUrl(item.Id).then(url => {
         if (!art.isConnected) return;
         const image = new Image();
         image.alt = '';
-        const url = URL.createObjectURL(blob);
-        images.push(url);
         image.src = url;
         art.replaceChildren(image);
       }).catch(() => { art.textContent = 'CAPA INDISPONÍVEL'; });
@@ -316,14 +302,16 @@ form.addEventListener('submit', async event => {
       Rating: parseRating(el('rating').value), Favorite: el('favorite').checked, Notes: el('notes').value,
       RemoveCover: el('removeCover').checked, Cover: file ? await base64(file) : null
     };
-    await request('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(change) }, 45000);
+    const result=await request('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(change) }, 45000);
+    const saved=await result.json();
+    if(saved.Item){const index=items.findIndex(item=>item.Id===saved.Item.Id);if(index<0)items.push(saved.Item);else items[index]=saved.Item;lastData='';render();}
     editor.close();
+    el('connection').textContent='Avaliação salva na nuvem.';
   } catch (error) {
     el('error').textContent = error.message;
   } finally {
     pending = false;
     el('save').disabled = el('cancel').disabled = false;
-    load();
   }
 });
 
@@ -339,7 +327,7 @@ el('next').addEventListener('click', () => { page++; render(); window.scrollTo(0
 document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
 setInterval(() => { if (!document.hidden) load(); }, 8000);
 </script>
-<script src="sharing.js?v=10"></script><script src="accounts.js?v=10"></script><script src="friends.js?v=10"></script><script src="recommendations.js?v=10"></script><script src="cloud-ui.js?v=10"></script><script src="season.js?v=10"></script><script src="bulk.js?v=10"></script><script src="duplicates.js?v=10"></script><script>
+<script src="sharing.js?v=11"></script><script src="accounts.js?v=11"></script><script src="friends.js?v=11"></script><script src="recommendations.js?v=11"></script><script src="cloud-ui.js?v=11"></script><script src="season.js?v=11"></script><script src="bulk.js?v=11"></script><script src="duplicates.js?v=11"></script><script>
 function syncCompletedEpisodes(){if(el('status').value==='Assistido' && Number(el('total').value)>0) el('episode').value=el('total').value;}
 el('status').addEventListener('change',syncCompletedEpisodes);
 el('total').addEventListener('input',syncCompletedEpisodes);

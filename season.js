@@ -164,7 +164,7 @@ function writeSeasonPreference(userId,value){localStorage.setItem(seasonPreferen
 async function seasonalJob(kind) {
   if((typeof isAppOwner==='function' && !isAppOwner()) || importing || pending || loading || editor.open || !session || (typeof sharingReadonly!=='undefined' && sharingReadonly)) return false;
   importing=true;
-  const buttons=['seasonImport','completeTitles','importButton','add','seasonAuto','updateEpisodes'];
+  const buttons=['seasonImport','completeTitles','add','seasonAuto','updateEpisodes'];
   buttons.forEach(id=>el(id).disabled=true);
   el('seasonErrors').replaceChildren();
   const progress=text=>el('seasonInfo').textContent=text;

@@ -21,7 +21,6 @@ function updateAccountControls(user){
  el('incomingLabel').hidden=!(sharingState.incoming||[]).length;
  const outgoing=el('outgoingInvites');outgoing.replaceChildren();
  for(const invite of sharingState.outgoing||[]){const li=document.createElement('li');li.textContent='Aguardando '+accountName(invite.username)+' ';const button=document.createElement('button');button.textContent='Cancelar convite';button.addEventListener('click',()=>accountAction('cancel',{p_invite:invite.id}));li.append(button);outgoing.append(li);}
- el('createShelf').hidden=!!sharingState.shelf || !isAppOwner();
 }
 async function accountAction(action,args={}){
  if(pending||importing||loading||editor.open){el('accountInfo').textContent='Aguarde a operação atual terminar.';return;}

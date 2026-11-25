@@ -12,18 +12,79 @@ function manualDuplicateCandidates(media,rows){
   [row.title,row.alternate_title].filter(Boolean).some(title=>families.has(franchiseKey(title))) && /(?:\s\d{1,2}|(?:part|cour|season|temporada|parte)\s*\d{1,2})$/i.test(row.title||''));
 }
 function duplicateRows(){return cloudRows.filter(row=>!row.deleted_at&&!row._virtual);}
+let duplicateScanResults=[],ignoredDuplicatePairs=[],duplicateScanReady=false;
+function duplicatePairKey(left,right){return [left,right].sort().join(':');}
+async function loadIgnoredDuplicates(){ignoredDuplicatePairs=await shelfRPC('anime_ignored_duplicates');}
+function duplicatePairReason(a,b){
+ const source=x=>(x.seasonal_source||'').replace(/\/$/,'');
+ if(source(a)&&source(a)===source(b))return 'Mesmo identificador do catálogo';
+ const coversame=a.cover_path&&b.cover_path&&/^[a-f0-9]{64}\./i.test(a.cover_path.split('/').pop())&&a.cover_path.split('/').pop()===b.cover_path.split('/').pop();
+ const primarysame=nameKey(a.title)===nameKey(b.title);
+ const trusted=x=>/^https:\/\/(anilist\.co|myanimelist\.net)\/anime\/\d+\/?$/.test(source(x));
+ if(trusted(a)&&trusted(b)&&source(a)!==source(b)&&!primarysame&&!coversame)return null;
+ const names=new Set([a.title,a.alternate_title].filter(Boolean).flatMap(x=>[nameKey(x),firstSeasonKey(x)]));
+ if([b.title,b.alternate_title].filter(Boolean).some(x=>names.has(nameKey(x))||names.has(firstSeasonKey(x))))return 'Mesmo nome ou título alternativo; revise as identificações';
+ if(coversame)return 'Mesma imagem de capa; confira a temporada';
+ if((!trusted(a)||!trusted(b)) && [a.title,a.alternate_title].filter(Boolean).some(x=>[b.title,b.alternate_title].filter(Boolean).some(y=>franchiseKey(x)===franchiseKey(y))))return 'Mesma série com numeração manual; confira a parte/temporada';
+ return null;
+}
 function renderDuplicates(){
  if(!isAppOwner()||sharingReadonly)return;
  const rows=duplicateRows().sort((a,b)=>a.title.localeCompare(b.title,'pt-BR'));
  for(const id of ['duplicateKeep','duplicateDrop']){const select=el(id),value=select.value;select.replaceChildren(new Option('Selecione um anime',''));for(const row of rows)select.add(new Option(row.title+' · '+row.status+' · '+row.id.slice(-6),row.id));select.value=rows.some(row=>row.id===value)?value:'';}
- const list=el('duplicateSuggestions');list.replaceChildren();let count=0;
- for(const imported of rows.filter(row=>/^https:\/\/(?:anilist\.co|myanimelist\.net)\/anime\//.test(row.seasonal_source||''))){
-  const candidates=rows.filter(row=>row.id!==imported.id && !row.seasonal_source && franchiseKey(row.title)===franchiseKey(imported.title));
-  for(const original of candidates.slice(0,4)){
-   if(count++>=30)break;const li=document.createElement('li');const button=document.createElement('button');button.textContent='Revisar '+original.title+' + '+imported.title;
-   button.addEventListener('click',()=>{el('duplicateKeep').value=original.id;el('duplicateDrop').value=imported.id;previewDuplicatePair();});li.append(button);list.append(li);
-  }if(count>=30)break;
+ renderDuplicateSuggestions();renderIgnoredDuplicates();
+}
+function renderDuplicateSuggestions(){
+ const list=el('duplicateSuggestions');list.replaceChildren();
+ const ignored=new Set(ignoredDuplicatePairs.map(p=>duplicatePairKey(p.left_id,p.right_id)));
+ const rows=new Map(duplicateRows().map(row=>[row.id,row]));
+ const visible=duplicateScanResults.filter(p=>!ignored.has(duplicatePairKey(p.left,p.right))&&rows.has(p.left)&&rows.has(p.right));
+ for(const pair of visible.slice(0,100)){
+  const left=rows.get(pair.left),right=rows.get(pair.right),li=document.createElement('li');
+  const caption=document.createElement('p');caption.textContent=pair.reason;caption.className='small';
+  const review=document.createElement('button');review.textContent='Revisar '+left.title+' + '+right.title;
+  review.addEventListener('click',()=>{el('duplicateKeep').value=left.id;el('duplicateDrop').value=right.id;previewDuplicatePair();});
+  const ignore=document.createElement('button');ignore.textContent='Ignorar sugestão';ignore.addEventListener('click',()=>ignoreDuplicatePair(pair.left,pair.right,true));
+  li.append(caption,review,ignore);list.append(li);
  }
+ if(duplicateScanReady)el('duplicateScanInfo').textContent=visible.length+' possível(is) duplicata(s) para revisar.'+(visible.length>100?' Mostrando as primeiras 100. Ignore ou unifique para ver as próximas.':'');
+}
+function renderIgnoredDuplicates(){
+ const list=el('ignoredDuplicateList');list.replaceChildren();const rows=new Map(duplicateRows().map(row=>[row.id,row]));let count=0;
+ for(const pair of ignoredDuplicatePairs){if(!rows.has(pair.left_id)||!rows.has(pair.right_id))continue;count++;
+  const li=document.createElement('li'),name=document.createElement('span');name.textContent=rows.get(pair.left_id).title+' + '+rows.get(pair.right_id).title+' ';
+  const restore=document.createElement('button');restore.textContent='Voltar a analisar';restore.addEventListener('click',()=>ignoreDuplicatePair(pair.left_id,pair.right_id,false));li.append(name,restore);list.append(li);
+ }
+ if(!count){const li=document.createElement('li');li.textContent='Nenhuma sugestão ignorada.';list.append(li);}
+}
+async function ignoreDuplicatePair(left,right,ignore){
+ if(!isAppOwner()||sharingReadonly||importing||pending||loading||editor.open)return;
+ importing=true;
+ try{ignoredDuplicatePairs=await shelfRPC('anime_ignore_duplicate',{p_left:left,p_right:right,p_ignore:ignore});renderDuplicateSuggestions();renderIgnoredDuplicates();el('duplicateInfo').textContent=ignore?'Sugestão ignorada. Os dois animes e seus status foram mantidos.':'Sugestão liberada para análise novamente.';}
+ catch(error){el('duplicateInfo').textContent=error.message;}
+ finally{importing=false;}
+}
+async function scanDuplicates(){
+ if(!isAppOwner()||sharingReadonly||importing||pending||loading||editor.open)return;
+ importing=true;el('scanDuplicates').disabled=true;el('duplicateScanInfo').textContent='Atualizando a coleção para iniciar a varredura…';
+ try{
+  await cloudCollection();await Promise.all([loadImportAliases(),loadIgnoredDuplicates()]);
+  const rows=duplicateRows(),groups=new Map();
+  for(const row of rows){const keys=new Set();
+   for(const name of [row.title,row.alternate_title].filter(Boolean)){keys.add('name:'+nameKey(name));keys.add('name:'+firstSeasonKey(name));keys.add('family:'+franchiseKey(name));}
+   if(row.seasonal_source)keys.add('source:'+row.seasonal_source.replace(/\/$/,''));
+   if(row.cover_path&&/^[a-f0-9]{64}\./i.test(row.cover_path.split('/').pop()))keys.add('cover:'+row.cover_path.split('/').pop());
+   for(const key of keys){if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row);}
+  }
+  const seen=new Set(),results=[];let compared=0;
+  for(const group of groups.values())for(let i=0;i<group.length;i++)for(let j=i+1;j<group.length;j++){
+   const key=duplicatePairKey(group[i].id,group[j].id);if(seen.has(key))continue;seen.add(key);
+   const reason=duplicatePairReason(group[i],group[j]);if(reason){const [left,right]=[group[i],group[j]].sort((a,b)=>a.added_at&&b.added_at?Date.parse(a.added_at)-Date.parse(b.added_at):a.id.localeCompare(b.id));results.push({left:left.id,right:right.id,reason});}
+   if(++compared%250===0){el('duplicateScanInfo').textContent='Analisando '+rows.length+' registros · '+compared+' comparações…';await new Promise(resolve=>setTimeout(resolve,0));}
+  }
+  duplicateScanResults=results;duplicateScanReady=true;renderDuplicates();el('duplicateInfo').textContent='Varredura concluída em '+rows.length+' animes. Nenhum registro foi unido automaticamente.';
+ }catch(error){el('duplicateScanInfo').textContent=error.message;}
+ finally{importing=false;el('scanDuplicates').disabled=false;}
 }
 async function previewDuplicatePair(){
  const ticket=++duplicatePreviewTicket;duplicatePreviewUrls.forEach(URL.revokeObjectURL);duplicatePreviewUrls=[];
@@ -70,6 +131,8 @@ async function updateEpisodeTotals(onProgress){
 el('duplicatesPanel').addEventListener('toggle',()=>{if(el('duplicatesPanel').open)renderDuplicates();});
 for(const id of ['duplicateKeep','duplicateDrop'])el(id).addEventListener('change',previewDuplicatePair);
 el('duplicateConfirm').addEventListener('click',mergeSelectedDuplicates);
+el('scanDuplicates').addEventListener('click',scanDuplicates);
+el('ignoredDuplicatePanel').addEventListener('toggle',async()=>{if(!el('ignoredDuplicatePanel').open || !isAppOwner() || importing)return;try{await loadIgnoredDuplicates();renderIgnoredDuplicates();}catch(error){el('duplicateInfo').textContent=error.message;}});
 el('updateEpisodes').addEventListener('click',()=>seasonalJob('episodes'));
 
-function resetDuplicateUI(){duplicatePreviewTicket++;duplicatePreviewUrls.forEach(URL.revokeObjectURL);duplicatePreviewUrls=[];importAliases=[];for(const id of ['duplicateKeep','duplicateDrop'])el(id).replaceChildren(new Option('Selecione um anime',''));el('duplicatePreview').replaceChildren();el('duplicateSuggestions').replaceChildren();el('duplicateInfo').textContent='';el('ownerTools').hidden=true;}
+function resetDuplicateUI(){duplicatePreviewTicket++;duplicatePreviewUrls.forEach(URL.revokeObjectURL);duplicatePreviewUrls=[];importAliases=[];duplicateScanResults=[];ignoredDuplicatePairs=[];duplicateScanReady=false;for(const id of ['duplicateKeep','duplicateDrop'])el(id).replaceChildren(new Option('Selecione um anime',''));el('duplicatePreview').replaceChildren();el('duplicateSuggestions').replaceChildren();el('duplicateInfo').textContent='';el('ownerTools').hidden=true;}

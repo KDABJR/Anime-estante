@@ -1,39 +1,36 @@
-ANIME ESTANTE 2.8 — unificar duplicados e atualizar episódios
+ANIME ESTANTE 2.9 — Duplicados, ignorar sugestões e avaliações mais rápidas
 
 ATIVAR
-1. No SQL Editor do seu Supabase, execute todo o arquivo Atualizar-2.8.sql. Requer as atualizações anteriores até 2.7 já aplicadas.
-2. Esse SQL já trata o caso confirmado: Spy x Family 2 = SPY×FAMILY Part 2. Mantém Spy x Family 2 como principal, com seu título e sua capa. Só faz a união automática se encontrar exatamente um registro ativo com cada um desses nomes na conta @KDAB. Não une Spy x Family 1 ou 3.
-3. Extraia AnimeEstante-Online-2.8.zip e envie todos os arquivos na raiz do GitHub KDABJR/Anime-estante por Add file > Upload files, substituindo os anteriores. Inclua duplicates.js. Confirme em Commit changes e aguarde a publicação.
-4. Reabra o aplicativo. O topo mostrará 2.8. Não precisa reinstalar o EXE ou APK.
+1. No SQL Editor do Supabase, execute todo o arquivo Atualizar-2.9.sql. Ele atualiza a estrutura 2.8, sem repetir a unificação automática do Spy x Family e sem apagar seus registros.
+2. Extraia AnimeEstante-Online-2.9.zip. No GitHub KDABJR/Anime-estante, use Add file > Upload files e envie todos os arquivos extraídos na raiz, substituindo os anteriores. Não envie a pasta externa.
+3. Aguarde a publicação e reabra os aplicativos no PC e no celular. O cabeçalho mostrará 2.9. Não precisa reinstalar o EXE ou APK.
 
-OUTROS DUPLICADOS
-Na conta @KDAB: Ferramentas da coleção > Unificar duplicados.
-As sugestões indicam possíveis diferenças entre títulos importados e cadastros por pasta. Uma sugestão não confirma que são o mesmo lançamento.
-Selecione o cadastro principal que deseja manter e o duplicado. Confira as capas, os nomes e os status na prévia. Depois clique Unificar e preservar o progresso.
-Part 2, Cour 2 e Season 2 nem sempre significam o mesmo lançamento. Uma numeração de pasta também pode contar uma parte como uma temporada. Confirme cada caso antes de unir.
-O cadastro principal mantém o nome e a capa; a identificação oficial do catálogo da duplicata é associada a ele. A duplicata deixa de aparecer nas coleções.
-Cada pessoa conserva seus próprios registros. Os dados de pessoas diferentes não são misturados. Os dois registros de cada pessoa são reconciliados individualmente:
-- Assistido prevalece quando um dos dois já estiver concluído.
-- Pendente não substitui um status pessoal já definido. Se ambos tiverem status diferentes já definidos, vale o mais recente.
-- Mantém o maior progresso de episódios. Se o total informado conflitar com um progresso maior, o total fica indefinido para não reduzir episódios vistos.
-- Preserva a nota do registro principal daquela pessoa; se estiver vazia, usa a nota da duplicata. Notas diferentes ficam também registradas nas anotações.
-- Favoritos são preservados e anotações diferentes são reunidas.
-Antes da união, o banco guarda uma cópia completa e protegida dos registros envolvidos, inclusive versões anteriores. Essas cópias não podem ser consultadas por contas comuns pelo aplicativo.
-As identificações do catálogo ficam vinculadas ao cadastro principal para impedir que a próxima importação volte a criar aquela duplicata.
+DUPLICADOS
+Ferramentas da coleção > Duplicados > Fazer varredura.
+A varredura atualiza os dados da coleção e procura possíveis duplicatas entre os registros atuais, inclusive importados. Analisa identificadores, nomes, títulos alternativos, indicação de primeira temporada, numeração manual e capas idênticas quando há uma identificação de imagem confiável.
+A análise não unifica nada sozinha. Identificações oficiais diferentes e partes/temporadas distintas continuam exigindo revisão. Confira os dois registros na prévia antes de usar Unificar e preservar o progresso.
+As primeiras 100 sugestões aparecem na lista. Ignore ou unifique para avançar pelas demais, se houver. Os dois seletores também permitem revisar um par manualmente.
 
-PREVENÇÃO
-Ao encontrar um título oficial como Part 2/Cour 2 e um cadastro manual de numeração ambígua da mesma série, a importação passa a informar o caso para revisão em vez de criar outro registro automaticamente.
-Temporadas diferentes continuam separadas. A ferramenta não remove números indiscriminadamente nem presume que Season 2 é igual a Part 2.
-A importação em lote continua permitindo ecchi, excluindo hentai/adulto explícito pela classificação do catálogo e preservando os cadastros já existentes.
+IGNORAR
+Cada sugestão tem Ignorar sugestão. Use quando os dois registros representam animes, partes ou temporadas diferentes.
+A decisão fica salva na conta @KDAB no banco e vale nos dois aparelhos. O par não volta a aparecer nas próximas varreduras.
+Isso não apaga ou une animes e não muda o status de nenhum deles para Ignorado. Apenas oculta aquela sugestão de duplicata.
+Em Sugestões ignoradas, use Voltar a analisar para desfazer a decisão. O par pode voltar à lista se ainda corresponder aos critérios da varredura.
 
-TOTAL DE EPISÓDIOS
-@KDAB: Ferramentas da coleção > Temporada japonesa e títulos > Atualizar total de episódios.
-Consulta os IDs ou nomes confirmados no catálogo e atualiza o total conhecido. A atualização vale para os registros ligados àquele título em cada conta.
-Não altera status, nota, favoritos, anotações ou quantidade de episódios já vistos. O aplicativo mantém a apresentação de Todos vistos para o status Assistido, conforme a regra existente.
-Se o catálogo não informar um total ou houver dúvida sobre a temporada/parte, mostra um aviso. Se um progresso já salvo for maior que o novo total, esse registro é preservado para revisão, sem reduzir episódios.
-Uma coleção grande pode levar vários minutos. Mantenha o aplicativo aberto com internet. As atualizações de títulos já concluídas são mantidas se o processo for interrompido.
+AVALIAÇÕES MAIS RÁPIDAS
+Depois de salvar, a interface usa o registro confirmado pelo servidor para atualizar o anime e sua versão local imediatamente. Não é preciso aguardar a leitura completa da coleção novamente.
+Alterações apenas de nota, status, episódios vistos, favoritos ou anotações não regravam nem bloqueiam o catálogo compartilhado. Alterações reais de metadados continuam seguindo as regras existentes.
+As capas já carregadas são reaproveitadas, com cache limitado a 72 entradas e aproximadamente 24 MB, em vez de baixar a mesma página toda vez que você salva uma nota.
+A atualização automática entre aparelhos permanece ativa. Um carregamento antigo em andamento não sobrescreve uma gravação que acabou de ser confirmada. Se a gravação falhar, o editor permanece aberto e a nota anterior é preservada na coleção.
+A velocidade ainda depende da conexão e da disponibilidade do Supabase; não foi medida uma duração real no seu dispositivo nesta sessão.
+
+FERRAMENTAS REMOVIDAS
+Compartilhar estante e Trazer coleção do PC foram retiradas das ferramentas de coleção. A sincronização online, as amizades e os compartilhamentos existentes continuam funcionando. Nenhuma coleção foi removida.
+A importação de novos animes do catálogo, temporada, nomes, episódios e Duplicados continuam disponíveis para @KDAB.
 
 VERIFICAÇÃO
-Banco local com contas distintas: união do Spy manual/importado sem alterar as temporadas 1 e 3; status e notas preservados por pessoa; favoritos e anotações reunidos; backup protegido; catálogo sem duplicata; importação repetida bloqueada para a identificação unificada; revisão de concorrência; totais atualizados sem modificar progresso/nota/status; execução repetível sem nova união.
-Interface e importação: detecção conservadora de Part/Cour, uso do cadastro ativo após unir, associação das identificações oficiais e consulta de episódios apenas quando a correspondência é segura. Mantidos os testes de notas, Quero assistir, filtros, recomendações e importação.
-Nenhum dado real foi unido nesta sessão. A união do caso confirmado ocorrerá ao executar o SQL acima no seu Supabase. O site também precisa ser publicado por você no GitHub, pois a integração disponível não tem permissão de escrita.
+Banco PostgreSQL local: gravações de nota e anotações sem atualização do catálogo comum; metadados reais ainda processados; ignorar par de forma persistente, reversível e independente da ordem; acesso restrito à conta principal e preservação dos status dos dois animes.
+Interface e rede simulada: uma escrita confirmada por avaliação sem releitura da coleção; resposta aplicada imediatamente; falha mantém editor e valor anterior; capas compartilhando uma requisição e sendo reutilizadas após editar nota; proteção contra leitura antiga em paralelo; cache limpo ao sair.
+Varredura: busca em dados atualizados, detecção de importados, sugestão ignorada ausente na varredura seguinte e restaurada após desfazer. As ferramentas retiradas não aparecem no HTML e seus controles antigos foram removidos do código.
+Mantidos os testes de filtros, paginação, notas, recomendações, nomes romanizados, ecchi permitido, filtro de hentai e importação.
+A prévia visual local não pôde ser acessada pelo navegador de teste. Nenhum dado real foi alterado. O SQL e o site ainda precisam ser aplicados por você; a integração do GitHub disponível não tem permissão de escrita.
