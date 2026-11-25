@@ -1,36 +1,16 @@
-ANIME ESTANTE 2.9 — Duplicados, ignorar sugestões e avaliações mais rápidas
+ANIME ESTANTE 2.9.1 — correção do carregamento da coleção
 
-ATIVAR
-1. No SQL Editor do Supabase, execute todo o arquivo Atualizar-2.9.sql. Ele atualiza a estrutura 2.8, sem repetir a unificação automática do Spy x Family e sem apagar seus registros.
-2. Extraia AnimeEstante-Online-2.9.zip. No GitHub KDABJR/Anime-estante, use Add file > Upload files e envie todos os arquivos extraídos na raiz, substituindo os anteriores. Não envie a pasta externa.
-3. Aguarde a publicação e reabra os aplicativos no PC e no celular. O cabeçalho mostrará 2.9. Não precisa reinstalar o EXE ou APK.
+A atualização 2.9 removeu um painel, mas deixou uma leitura do campo memberLabel que pertencia a ele. Isso causava Cannot read properties of null (reading 'value') e interrompia a exibição da coleção. A leitura antiga foi removida e as referências aos campos do HTML foram verificadas.
 
-DUPLICADOS
-Ferramentas da coleção > Duplicados > Fazer varredura.
-A varredura atualiza os dados da coleção e procura possíveis duplicatas entre os registros atuais, inclusive importados. Analisa identificadores, nomes, títulos alternativos, indicação de primeira temporada, numeração manual e capas idênticas quando há uma identificação de imagem confiável.
-A análise não unifica nada sozinha. Identificações oficiais diferentes e partes/temporadas distintas continuam exigindo revisão. Confira os dois registros na prévia antes de usar Unificar e preservar o progresso.
-As primeiras 100 sugestões aparecem na lista. Ignore ou unifique para avançar pelas demais, se houver. Os dois seletores também permitem revisar um par manualmente.
+ATUALIZAR
+1. Extraia AnimeEstante-Online-2.9.1.zip.
+2. No repositório KDABJR/Anime-estante, use Add file > Upload files e envie todos os arquivos extraídos na raiz, substituindo os anteriores. Não envie a pasta externa.
+3. Confirme em Commit changes e aguarde a publicação do GitHub Pages.
+4. No PC, atualize com Ctrl+Shift+R. No celular, feche completamente o aplicativo e reabra. Confira 2.9.1 no cabeçalho.
 
-IGNORAR
-Cada sugestão tem Ignorar sugestão. Use quando os dois registros representam animes, partes ou temporadas diferentes.
-A decisão fica salva na conta @KDAB no banco e vale nos dois aparelhos. O par não volta a aparecer nas próximas varreduras.
-Isso não apaga ou une animes e não muda o status de nenhum deles para Ignorado. Apenas oculta aquela sugestão de duplicata.
-Em Sugestões ignoradas, use Voltar a analisar para desfazer a decisão. O par pode voltar à lista se ainda corresponder aos critérios da varredura.
+Esta correção não exige SQL novo. Se você já executou Atualizar-2.9.sql, não precisa repeti-lo. Não reinstale o APK/EXE e não importe novamente sua coleção.
 
-AVALIAÇÕES MAIS RÁPIDAS
-Depois de salvar, a interface usa o registro confirmado pelo servidor para atualizar o anime e sua versão local imediatamente. Não é preciso aguardar a leitura completa da coleção novamente.
-Alterações apenas de nota, status, episódios vistos, favoritos ou anotações não regravam nem bloqueiam o catálogo compartilhado. Alterações reais de metadados continuam seguindo as regras existentes.
-As capas já carregadas são reaproveitadas, com cache limitado a 72 entradas e aproximadamente 24 MB, em vez de baixar a mesma página toda vez que você salva uma nota.
-A atualização automática entre aparelhos permanece ativa. Um carregamento antigo em andamento não sobrescreve uma gravação que acabou de ser confirmada. Se a gravação falhar, o editor permanece aberto e a nota anterior é preservada na coleção.
-A velocidade ainda depende da conexão e da disponibilidade do Supabase; não foi medida uma duração real no seu dispositivo nesta sessão.
+Os recursos da versão 2.9 são mantidos: Duplicados com varredura e sugestões ignoradas, gravação de avaliações sem recarregar a coleção inteira e sem baixar novamente as mesmas capas, ferramentas antigas removidas.
 
-FERRAMENTAS REMOVIDAS
-Compartilhar estante e Trazer coleção do PC foram retiradas das ferramentas de coleção. A sincronização online, as amizades e os compartilhamentos existentes continuam funcionando. Nenhuma coleção foi removida.
-A importação de novos animes do catálogo, temporada, nomes, episódios e Duplicados continuam disponíveis para @KDAB.
-
-VERIFICAÇÃO
-Banco PostgreSQL local: gravações de nota e anotações sem atualização do catálogo comum; metadados reais ainda processados; ignorar par de forma persistente, reversível e independente da ordem; acesso restrito à conta principal e preservação dos status dos dois animes.
-Interface e rede simulada: uma escrita confirmada por avaliação sem releitura da coleção; resposta aplicada imediatamente; falha mantém editor e valor anterior; capas compartilhando uma requisição e sendo reutilizadas após editar nota; proteção contra leitura antiga em paralelo; cache limpo ao sair.
-Varredura: busca em dados atualizados, detecção de importados, sugestão ignorada ausente na varredura seguinte e restaurada após desfazer. As ferramentas retiradas não aparecem no HTML e seus controles antigos foram removidos do código.
-Mantidos os testes de filtros, paginação, notas, recomendações, nomes romanizados, ecchi permitido, filtro de hentai e importação.
-A prévia visual local não pôde ser acessada pelo navegador de teste. Nenhum dado real foi alterado. O SQL e o site ainda precisam ser aplicados por você; a integração do GitHub disponível não tem permissão de escrita.
+Verificação: teste reproduziu exatamente o erro da imagem antes da correção; depois dela, os testes com campos ausentes retornando null passaram. Verificadas as referências literais aos campos existentes, carregamento das coleções, salvamento de avaliações, falhas de gravação, varredura, ignorar/restaurar, recomendações e cache de capas.
+Nenhum dado real de sua coleção foi alterado nesta sessão. Os arquivos ainda precisam ser publicados por você, pois a integração do GitHub não tem permissão de escrita.

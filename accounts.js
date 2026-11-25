@@ -8,7 +8,6 @@ function updateAccountControls(user){
  el('currentUsername').textContent=profile?'Seu nome único: '+accountName(profile.username):'Escolha seu nome único para receber convites.';
  if(usernameLoadedFor!==user.id || profile){el('username').value=profile?.username||'';usernameLoadedFor=user.id;}
  el('username').disabled=!!profile;el('saveUsername').hidden=!!profile;
- if(!el('memberLabel').value && profile)el('memberLabel').value=accountName(profile.username);
  el('namedInviteControls').hidden=!isAppOwner() || !sharingState.shelf;
  const incoming=el('incomingInvites');incoming.replaceChildren();
  for(const invite of sharingState.incoming||[]){
